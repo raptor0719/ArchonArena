@@ -38,7 +38,7 @@ public class MainMenu extends Level {
 		button = new UIButton(x, y, UIAnchorPoint.CENTER, 100, 50, 0) {
 			@Override
 			public void draw(final IGraphics graphics) {
-				graphics.drawRectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(), new BasicColor(255, 255, 255, 100));
+				graphics.drawRectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(), true, new BasicColor(255, 255, 255, 100));
 			}
 
 			@Override
@@ -73,9 +73,9 @@ public class MainMenu extends Level {
 		final BasicColor coolPurpleColorMan = new BasicColor(50, 0, 150, 200);
 		final int barWidth = 100;
 
-		graphics.drawRectangle(0, 0, viewportWidth, barWidth, coolPurpleColorMan);
-		graphics.drawRectangle(0, 0, barWidth, viewportHeight, coolPurpleColorMan);
-		graphics.drawRectangle(viewportWidth - barWidth, 0, barWidth, viewportHeight, coolPurpleColorMan);
-		graphics.drawRectangle(0, viewportHeight - barWidth, viewportWidth, barWidth, coolPurpleColorMan);
+		graphics.drawRectangle(0, 0, viewportWidth, barWidth, true, coolPurpleColorMan);
+		graphics.drawRectangle(0, 0, barWidth, viewportHeight, true, coolPurpleColorMan);
+		graphics.drawRectangle(viewportWidth - barWidth, 0, barWidth, viewportHeight, true, coolPurpleColorMan);
+		graphics.drawRectangle(0, viewportHeight - barWidth, viewportWidth, barWidth, true, coolPurpleColorMan);
 	}
 }
