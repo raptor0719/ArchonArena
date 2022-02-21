@@ -1,4 +1,4 @@
-package raptor.game.archonArena.menus;
+package raptor.game.archonArena.menu;
 
 import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IGraphics;
