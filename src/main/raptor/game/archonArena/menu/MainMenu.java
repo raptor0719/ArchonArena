@@ -1,6 +1,7 @@
 package raptor.game.archonArena.menu;
 
 import raptor.engine.display.render.BasicColor;
+import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.game.Game;
 import raptor.engine.game.Level;
@@ -13,11 +14,12 @@ import raptor.engine.ui.input.IInputMap;
 import raptor.engine.ui.input.InputMap;
 import raptor.engine.ui.input.KeyAction;
 import raptor.engine.ui.input.PhysicalInput;
-import raptor.engine.util.geometry.Point;
+import raptor.game.archonArena.map.TestMap;
 
 public class MainMenu extends Level {
 	private final UIState mainMenuState;
-	private UIButton button;
+	private UIButton exitGameButton;
+	private UIButton startGameButton;
 
 	public MainMenu() {
 		this.mainMenuState = new UIState();
@@ -35,19 +37,11 @@ public class MainMenu extends Level {
 		final int x = Game.getRenderer().getViewport().getWidth()/2;
 		final int y = Game.getRenderer().getViewport().getHeight()/2;
 
-		button = new UIButton(x, y, UIAnchorPoint.CENTER, 100, 50, 0) {
-			@Override
-			public void draw(final IGraphics graphics) {
-				graphics.drawRectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(), true, new BasicColor(255, 255, 255, 100));
-			}
+		exitGameButton = new ExitGameButton(x, y, UIAnchorPoint.CENTER, 100, 50, 0);
+		startGameButton = new StartGameButton(x, y - 100, UIAnchorPoint.CENTER, 100, 50, 0);
 
-			@Override
-			public void activate() {
-				Game.exitGame();
-			}
-		};
-
-		mainMenuState.addElement(button);
+		mainMenuState.addElement(exitGameButton);
+		mainMenuState.addElement(startGameButton);
 
 		final IInputMap inputMap = new InputMap();
 		inputMap.mapInput(PhysicalInput.LEFT_MOUSE, KeyAction.RELEASED, UserInterface.ACTIVATE_BUTTON_ACTION);
@@ -60,13 +54,13 @@ public class MainMenu extends Level {
 
 	@Override
 	public void update() {
-		final Point p = Game.getUserInterface().getMousePosition();
-		button.setX(p.getX());
-		button.setY(p.getY());
+
 	}
 
 	@Override
-	public void draw(final IGraphics graphics) {
+	public void draw(final IGraphics translatedGraphics) {
+		final IGraphics graphics = translatedGraphics.getViewportRenderer();
+
 		final int viewportWidth = Game.getRenderer().getViewport().getWidth();
 		final int viewportHeight = Game.getRenderer().getViewport().getHeight();
 
@@ -77,5 +71,41 @@ public class MainMenu extends Level {
 		graphics.drawRectangle(0, 0, barWidth, viewportHeight, true, coolPurpleColorMan);
 		graphics.drawRectangle(viewportWidth - barWidth, 0, barWidth, viewportHeight, true, coolPurpleColorMan);
 		graphics.drawRectangle(0, viewportHeight - barWidth, viewportWidth, barWidth, true, coolPurpleColorMan);
+	}
+
+	private static class StartGameButton extends UIButton {
+		private final IColor backgroundColor = new BasicColor(150, 150, 255, 100);
+
+		public StartGameButton(final int x, final int y, final UIAnchorPoint anchor, final int width, final int height, final int depth) {
+			super(x, y, anchor, width, height, depth);
+		}
+
+		@Override
+		public void draw(final IGraphics graphics) {
+			graphics.drawRectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(), true, backgroundColor);
+		}
+
+		@Override
+		public void activate() {
+			Game.loadLevel(new TestMap());
+		}
+	}
+
+	private static class ExitGameButton extends UIButton {
+		private final IColor backgroundColor = new BasicColor(255, 255, 255, 100);
+
+		public ExitGameButton(final int x, final int y, final UIAnchorPoint anchor, final int width, final int height, final int depth) {
+			super(x, y, anchor, width, height, depth);
+		}
+
+		@Override
+		public void draw(final IGraphics graphics) {
+			graphics.drawRectangle(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(), true, backgroundColor);
+		}
+
+		@Override
+		public void activate() {
+			Game.exitGame();
+		}
 	}
 }

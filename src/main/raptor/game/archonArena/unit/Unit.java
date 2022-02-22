@@ -32,6 +32,10 @@ public class Unit extends Entity {
 
 	}
 
+	public void moveOrder(final int pointX, final int pointY) {
+
+	}
+
 	public UnitDefinition getDefinition() {
 		return definition;
 	}
