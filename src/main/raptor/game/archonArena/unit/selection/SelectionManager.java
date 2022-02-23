@@ -14,6 +14,7 @@ import raptor.engine.game.entity.IEntity;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.Rectangle;
 import raptor.game.archonArena.unit.Unit;
+import raptor.game.archonArena.unit.UnitPositionToLowLevelCoordinateTranslator;
 
 public class SelectionManager implements IDrawable {
 	private static final IColor SELECTION_BOX_COLOR = new BasicColor(0, 255, 0, 255);
@@ -67,12 +68,10 @@ public class SelectionManager implements IDrawable {
 	public void select() {
 		selectionActive = false;
 
-		if (!append)
-			clearSelected();
-
 		final CollisionRectangle selectionBox = new CollisionRectangle();
 		selectionBox.setCollision(new Rectangle(start, new Point(start.getX(), end.getY()), new Point(end.getX(), start.getY()), end));
 
+		boolean needToClear = !append;
 		for (final IEntity entity : Game.getCurrentLevel().getAllEntities()) {
 			if (!(entity instanceof Unit))
 				continue;
@@ -80,6 +79,11 @@ public class SelectionManager implements IDrawable {
 			final Unit unit = (Unit)entity;
 
 			if (isInSelectionBox(selectionBox, unit)) {
+				if (needToClear) {
+					clearSelected();
+					needToClear = false;
+				}
+
 				if (remove)
 					currentSelected.remove(unit);
 				else
@@ -100,10 +104,15 @@ public class SelectionManager implements IDrawable {
 		this.remove = remove;
 	}
 
+	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
+		for (final Unit unit : currentSelected)
+			unit.moveOrder(pointX, pointY, queue);
+	}
+
 	@Override
 	public void draw(final IGraphics graphics) {
 		for (final Unit unit : currentSelected)
-			graphics.drawOval(unit.getX(), unit.getY(), 5, 5, false, SELECTION_BOX_COLOR);
+			graphics.drawOval(unit.getX() - 2, unit.getY() - 2, 4, 4, false, SELECTION_BOX_COLOR);
 
 		if (!selectionActive)
 			return;
@@ -115,6 +124,13 @@ public class SelectionManager implements IDrawable {
 	}
 
 	private boolean isInSelectionBox(final CollisionRectangle selectionBox, final Unit unit) {
-		return selectionBox.collidesWithRectangle(unit.getDefinition().getSelectionBox());
+		final CollisionRectangle unitSelectableBox = new CollisionRectangle();
+		final int startX = UnitPositionToLowLevelCoordinateTranslator.translatePositionX(unit);
+		final int startY = UnitPositionToLowLevelCoordinateTranslator.translatePositionY(unit);
+		final int width = unit.getDefinition().getWidth();
+		final int height = unit.getDefinition().getHeight();
+		unitSelectableBox.setCollision(new Rectangle(startX, startY, startX + width, startY, startX, startY + height, startX + width, startY + height));
+
+		return selectionBox.collidesWithRectangle(unitSelectableBox);
 	}
 }

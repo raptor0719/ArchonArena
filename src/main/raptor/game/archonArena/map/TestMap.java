@@ -7,8 +7,10 @@ import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.display.render.IViewport;
+import raptor.engine.display.render.ViewportToLocationTransformer;
 import raptor.engine.game.Game;
 import raptor.engine.game.Level;
+import raptor.engine.nav.api.INavigator;
 import raptor.engine.nav.mesh.NavMeshNavigator;
 import raptor.engine.ui.UIAnchorPoint;
 import raptor.engine.ui.UIState;
@@ -22,14 +24,23 @@ import raptor.engine.ui.input.PhysicalInput;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.Polygon;
 import raptor.game.archonArena.menu.MainMenu;
+import raptor.game.archonArena.unit.Unit;
+import raptor.game.archonArena.unit.UnitDefinition;
+import raptor.game.archonArena.unit.selection.SelectionManager;
 
 public class TestMap extends Level {
+	private final SelectionManager selectionManager;
+
 	private final UIState gameplayState;
 	private UIButton exitLevelButton;
 
-	boolean scrollLeft = false;
+	int viewportMoveX = 0;
+	int viewportMoveY = 0;
+
+	Unit testUnit;
 
 	public TestMap() {
+		this.selectionManager = new SelectionManager();
 		this.gameplayState = new UIState();
 	}
 
@@ -41,46 +52,113 @@ public class TestMap extends Level {
 
 		final IInputMap inputMap = new InputMap();
 		inputMap.mapInput(PhysicalInput.LEFT_MOUSE, KeyAction.RELEASED, UserInterface.ACTIVATE_BUTTON_ACTION);
+
 		inputMap.mapInput(PhysicalInput.LEFT_ARROW, KeyAction.PRESSED, "VIEWPORT_LEFT_START");
 		inputMap.mapInput(PhysicalInput.LEFT_ARROW, KeyAction.RELEASED, "VIEWPORT_LEFT_END");
+		inputMap.mapInput(PhysicalInput.RIGHT_ARROW, KeyAction.PRESSED, "VIEWPORT_RIGHT_START");
+		inputMap.mapInput(PhysicalInput.RIGHT_ARROW, KeyAction.RELEASED, "VIEWPORT_RIGHT_END");
+		inputMap.mapInput(PhysicalInput.UP_ARROW, KeyAction.PRESSED, "VIEWPORT_UP_START");
+		inputMap.mapInput(PhysicalInput.UP_ARROW, KeyAction.RELEASED, "VIEWPORT_UP_END");
+		inputMap.mapInput(PhysicalInput.DOWN_ARROW, KeyAction.PRESSED, "VIEWPORT_DOWN_START");
+		inputMap.mapInput(PhysicalInput.DOWN_ARROW, KeyAction.RELEASED, "VIEWPORT_DOWN_END");
+
+		inputMap.mapInput(PhysicalInput.LEFT_MOUSE, KeyAction.PRESSED, "SELECTION_START");
+		inputMap.mapInput(PhysicalInput.LEFT_MOUSE, KeyAction.RELEASED, "SELECTION_END");
+
+		inputMap.mapInput(PhysicalInput.RIGHT_MOUSE, KeyAction.RELEASED, "ORDER_TARGET");
 
 		gameplayState.setInputMap(inputMap);
 
 		gameplayState.addActionHandler("VIEWPORT_LEFT_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				scrollLeft = true;
+				viewportMoveX = -1;
 			}
 		});
-
 		gameplayState.addActionHandler("VIEWPORT_LEFT_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				scrollLeft = false;
+				viewportMoveX = 0;
 			}
 		});
-
-		gameplayState.addActionHandler("ACTIVATE", new IActionHandler() {
+		gameplayState.addActionHandler("VIEWPORT_RIGHT_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				final IViewport viewport = Game.getRenderer().getViewport();
-
-				viewport.setXPosition(gameMouseX - viewport.getWidth()/2);
-				viewport.setYPosition(gameMouseY - viewport.getHeight()/2);
+				viewportMoveX = 1;
+			}
+		});
+		gameplayState.addActionHandler("VIEWPORT_RIGHT_END", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				viewportMoveX = 0;
+			}
+		});
+		gameplayState.addActionHandler("VIEWPORT_UP_START", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				viewportMoveY = -1;
+			}
+		});
+		gameplayState.addActionHandler("VIEWPORT_UP_END", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				viewportMoveY = 0;
+			}
+		});
+		gameplayState.addActionHandler("VIEWPORT_DOWN_START", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				viewportMoveY = 1;
+			}
+		});
+		gameplayState.addActionHandler("VIEWPORT_DOWN_END", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				viewportMoveY = 0;
+			}
+		});
+		gameplayState.addActionHandler("SELECTION_START", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				selectionManager.startSelection(gameMouseX, gameMouseY);
+			}
+		});
+		gameplayState.addActionHandler("SELECTION_END", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				selectionManager.select();
+			}
+		});
+		gameplayState.addActionHandler("ORDER_TARGET", new IActionHandler() {
+			@Override
+			public void handleAction(final int gameMouseX, final int gameMouseY) {
+				selectionManager.moveOrder(gameMouseX, gameMouseY, false);
 			}
 		});
 
-		addNavigator(0, getTestNavigator());
+		final INavigator navigator = getTestNavigator();
+		addNavigator(0, navigator);
 
 		Game.getUserInterface().setState(gameplayState);
+
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", null, 5, 20, 20);
+		testUnit = new Unit(testUnitDefinition, navigator);
+		testUnit.setX(200);
+		testUnit.setY(200);
+
+		this.addEntity(testUnit);
 	}
 
 	@Override
 	public void update() {
-		if (scrollLeft) {
-			final IViewport viewport = Game.getRenderer().getViewport();
-			viewport.setXPosition(viewport.getXPosition() - 5);
-		}
+		final IViewport viewport = Game.getRenderer().getViewport();
+
+		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*3);
+		viewport.setYPosition(viewport.getYPosition() + viewportMoveY*3);
+
+		final Point mousePosition = Game.getUserInterface().getMousePosition();
+		final ViewportToLocationTransformer t = Game.getViewportToLocation();
+		selectionManager.setSelectionEnd(t.transformX(mousePosition.getX()), t.transformY(mousePosition.getY()));
 	}
 
 	@Override
@@ -96,6 +174,8 @@ public class TestMap extends Level {
 		graphics.drawLine(300, 150, 300, 350, 2, color);
 		graphics.drawLine(300, 350, 450, 200, 2, color);
 		graphics.drawLine(450, 200, 300, 150, 2, color);
+
+		selectionManager.draw(graphics);
 	}
 
 	private NavMeshNavigator getTestNavigator() {
