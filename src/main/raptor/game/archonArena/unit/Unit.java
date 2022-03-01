@@ -35,7 +35,7 @@ public class Unit extends Entity {
 	private boolean isNewOrder;
 
 	public Unit(final UnitDefinition definition, final INavigator navigator) {
-		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModel());
+		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance());
 
 		this.definition = definition;
 

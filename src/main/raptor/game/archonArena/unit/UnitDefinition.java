@@ -1,19 +1,19 @@
 package raptor.game.archonArena.unit;
 
-import raptor.engine.model.Model;
+import raptor.game.archonArena.model.ModelDefinition;
 
 public class UnitDefinition {
 	private final String name;
-	private final Model model;
+	private final ModelDefinition modelDefinition;
 
 	private final int moveSpeed;
 
 	private final int width;
 	private final int height;
 
-	public UnitDefinition(final String name, final Model model, final int moveSpeed, final int width, final int height) {
+	public UnitDefinition(final String name, final ModelDefinition modelDefinition, final int moveSpeed, final int width, final int height) {
 		this.name = name;
-		this.model = model;
+		this.modelDefinition = modelDefinition;
 
 		this.moveSpeed = moveSpeed;
 
@@ -25,8 +25,8 @@ public class UnitDefinition {
 		return name;
 	}
 
-	public Model getModel() {
-		return model;
+	public ModelDefinition getModelDefintion() {
+		return modelDefinition;
 	}
 
 	public int getMoveSpeed() {
