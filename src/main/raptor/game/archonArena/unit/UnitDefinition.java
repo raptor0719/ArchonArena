@@ -1,17 +1,17 @@
 package raptor.game.archonArena.unit;
 
-import raptor.game.archonArena.model.ModelDefinition;
+import raptor.game.archonArena.model.AnimatedModelDefinition;
 
 public class UnitDefinition {
 	private final String name;
-	private final ModelDefinition modelDefinition;
+	private final AnimatedModelDefinition modelDefinition;
 
 	private final int moveSpeed;
 
 	private final int width;
 	private final int height;
 
-	public UnitDefinition(final String name, final ModelDefinition modelDefinition, final int moveSpeed, final int width, final int height) {
+	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int moveSpeed, final int width, final int height) {
 		this.name = name;
 		this.modelDefinition = modelDefinition;
 
@@ -25,7 +25,7 @@ public class UnitDefinition {
 		return name;
 	}
 
-	public ModelDefinition getModelDefintion() {
+	public AnimatedModelDefinition getModelDefintion() {
 		return modelDefinition;
 	}
 

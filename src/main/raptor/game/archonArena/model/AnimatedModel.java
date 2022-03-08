@@ -13,14 +13,16 @@ public class AnimatedModel extends Model {
 	private final AnimationDefinition defaultAnimation;
 
 	private Animation currentAnimation;
-	private boolean deliveredActivationFrame;
 	private int currentFrameIndex;
-	private int currentFrameHolds;
 	private int currentHold;
+	private boolean deliveredActivationFrame;
 	private boolean loop;
 
 	public AnimatedModel(final WireModel wireModel, final Map<String, DirectionalSprite> defaultVisuals, final List<AnimationDefinition> animations, final AnimationDefinition defaultAnimation) {
 		super(wireModel, defaultVisuals);
+
+		if (!animations.contains(defaultAnimation))
+			throw new IllegalArgumentException("The default animation must exist in the provided animations.");
 
 		this.animations = new HashMap<>();
 		for (final AnimationDefinition definition : animations) {
@@ -33,13 +35,31 @@ public class AnimatedModel extends Model {
 		this.currentAnimation = getDefaultAnimation();
 		this.deliveredActivationFrame = false;
 		this.currentFrameIndex = 0;
-		this.currentFrameHolds = this.currentAnimation.getHolds(this.currentFrameIndex);
 		this.currentHold = 0;
 		this.loop = false;
+
+		setFrame();
 	}
 
 	public void advanceFrame() {
-		// TODO
+		currentHold++;
+
+		if (currentHold < currentAnimation.getHolds(currentFrameIndex))
+			return;
+
+		currentFrameIndex++;
+		deliveredActivationFrame = false;
+		currentHold = 0;
+
+		if (currentFrameIndex < currentAnimation.getLength()) {
+			setFrame();
+			return;
+		}
+
+		currentAnimation = (loop) ? currentAnimation : getDefaultAnimation();
+		currentFrameIndex = 0;
+
+		setFrame();
 	}
 
 	public void playAnimation(final String animationName) {
@@ -56,6 +76,10 @@ public class AnimatedModel extends Model {
 		return isActivation;
 	}
 
+	private void setFrame() {
+		super.setFrame(currentAnimation.getFrame(currentFrameIndex));
+	}
+
 	private void play(final String animationName, final boolean loopAnimation) {
 		final Animation toPlay = animations.get(animationName);
 
@@ -65,9 +89,10 @@ public class AnimatedModel extends Model {
 		currentAnimation = toPlay;
 		deliveredActivationFrame = false;
 		currentFrameIndex = 0;
-		currentFrameHolds = currentAnimation.getHolds(currentFrameIndex);
 		currentHold = 0;
 		loop = loopAnimation;
+
+		setFrame();
 	}
 
 	private Animation getDefaultAnimation() {
