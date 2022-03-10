@@ -50,7 +50,11 @@ public class Main {
 
 		final Game game = new Game(new MainMenu(), renderer, inputManager, inputManager);
 
-		game.start();
+		try {
+			game.start();
+		} catch (final Throwable t) {
+			t.printStackTrace();
+		}
 
 		jframe.dispose();
 	}
