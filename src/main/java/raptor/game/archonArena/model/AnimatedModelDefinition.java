@@ -1,22 +1,21 @@
 package raptor.game.archonArena.model;
 
 import java.util.List;
-import java.util.Map;
 
-import raptor.engine.model.DirectionalSprite;
+import raptor.engine.model.SpriteModel;
 import raptor.engine.model.WireModel;
 
 public class AnimatedModelDefinition {
 	private final String name;
 	private final WireModel wireModel;
-	private final Map<String, DirectionalSprite> defaultVisuals;
+	private final SpriteModel spriteModel;
 	private final List<AnimationDefinition> animations;
 	private final AnimationDefinition defaultAnimation;
 
-	public AnimatedModelDefinition(final String name, final WireModel wireModel, final Map<String, DirectionalSprite> defaultVisuals, final List<AnimationDefinition> animations, final String defaultAnimationName) {
+	public AnimatedModelDefinition(final String name, final WireModel wireModel, final SpriteModel spriteModel, final List<AnimationDefinition> animations, final String defaultAnimationName) {
 		this.name = name;
 		this.wireModel = wireModel;
-		this.defaultVisuals = defaultVisuals;
+		this.spriteModel = spriteModel;
 		this.animations = animations;
 		this.defaultAnimation = findDefinition(defaultAnimationName);
 
@@ -29,7 +28,7 @@ public class AnimatedModelDefinition {
 	}
 
 	public AnimatedModel getModelInstance() {
-		return new AnimatedModel(wireModel, defaultVisuals, animations, defaultAnimation);
+		return new AnimatedModel(wireModel, spriteModel, animations, defaultAnimation);
 	}
 
 	private AnimationDefinition findDefinition(final String name) {

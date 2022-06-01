@@ -1,109 +1,110 @@
 package raptor.game.archonArena.asset.io;
 
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import raptor.engine.model.DirectionalSprite;
+import raptor.engine.model.Direction;
+import raptor.engine.model.DirectionalWireModelFrame;
+import raptor.engine.model.Hardpoint;
 import raptor.engine.model.WireModel;
-import raptor.engine.model.WireModelReadWrite;
-import raptor.engine.util.BinaryDataTools;
+import raptor.engine.model.WireModelFrame;
 import raptor.game.archonArena.asset.AnimatedModelLibrary;
 import raptor.game.archonArena.asset.SpriteLibrary;
 import raptor.game.archonArena.model.AnimatedModelDefinition;
-import raptor.game.archonArena.model.AnimationDefinition;
-import raptor.game.archonArena.model.io.AnimationDefinitionReader;
 
 public class AnimatedModelLibraryReader {
-	public static final byte[] MAGIC_NUMBER = new byte[] {'m', 'o', 'd', 'e', 'l', 'l', 'i', 'b', 'r', 'a', 'r', 'y'};
+	public static AnimatedModelLibrary read(final String modelDirectoryPath, final SpriteLibrary spriteLibrary) {
+		final File modelDirectory = new File(modelDirectoryPath);
 
-	public static AnimatedModelLibrary read(final String filePath, final SpriteLibrary spriteLibrary) {
-		final File file = new File(filePath);
+		if (!modelDirectory.exists())
+			throw new IllegalArgumentException(String.format("The directory %s does not exist.", modelDirectoryPath));
+		if (!modelDirectory.isDirectory())
+			throw new IllegalArgumentException(String.format("Expected a directory, but %s was a file.", modelDirectoryPath));
 
-		if (!file.exists() || file.isDirectory())
-			throw new IllegalArgumentException(String.format("The file %s does not exist.", filePath));
+		final File[] files = modelDirectory.listFiles(new ModelMakerFileNameFilter());
 
-		FileInputStream fstream = null;
+		final List<AnimatedModelDefinition> modelDefinitions = new ArrayList<>();
+
+		for (final File file : files) {
+			final AnimatedModelDefinition definition = createDefinition(file);
+
+			if (definition != null)
+				modelDefinitions.add(definition);
+		}
+
+		return new AnimatedModelLibrary(modelDefinitions);
+	}
+
+	private static AnimatedModelDefinition createDefinition(final File file) {
+		InputStream istream = null;
+
 		try {
-			fstream = new FileInputStream(file);
+			istream = new FileInputStream(file);
 
-			return read(fstream, spriteLibrary);
-		} catch (final IOException e) {
-			throw new RuntimeException("Failed reading AnimatedModelLibrary.", e);
+			final raptor.modelMaker.model.Model model = raptor.modelMaker.model.io.ModelReader.read(istream);
+
+			final WireModel wireModel = buildWireModel(model);
+
+			// TODO: Finish implementing model maker model to archon arena model bridge
+			// need SpriteModel and animation list
+
+			return new AnimatedModelDefinition(model.getName(), wireModel, null, null, "idle1");
+		} catch (final Throwable t) {
+			System.err.println(String.format("Failed to read model from file: %s", file.getAbsolutePath()));
+			t.printStackTrace(System.err);
+
+			return null;
 		} finally {
 			try {
-				if (fstream != null)
-					fstream.close();
-			} catch (final IOException e) {
-				// swallow
+				if (istream != null)
+					istream.close();
+			} catch (final Exception e) {
+				/* swallow */
 			}
 		}
 	}
 
-	private static AnimatedModelLibrary read(final InputStream istream, final SpriteLibrary spriteLibrary) throws IOException {
-		final DataInputStream dis = new DataInputStream(istream);
+	private static WireModel buildWireModel(final raptor.modelMaker.model.Model model) {
+		final List<DirectionalWireModelFrame> frames = new ArrayList<>();
 
-		final byte[] magicNumber = new byte[MAGIC_NUMBER.length];
-		dis.readFully(magicNumber);
+		for (final raptor.modelMaker.model.Frame frame : model.getFrames())
+			frames.add(buildDirectionalWireModelFrame(frame));
 
-		if (!Arrays.equals(magicNumber, MAGIC_NUMBER))
-			throw new IllegalArgumentException("Was not an AnimatedModelLibrary format.");
-
-		final List<AnimatedModelDefinition> definitions = readDefinitions(spriteLibrary, dis);
-
-		return new AnimatedModelLibrary(definitions);
+		return new WireModel(model.getName(), frames);
 	}
 
-	private static List<AnimatedModelDefinition> readDefinitions(final SpriteLibrary spriteLibrary, final DataInputStream dis) throws IOException {
-		final int definitionCount = dis.readInt();
+	private static DirectionalWireModelFrame buildDirectionalWireModelFrame(final raptor.modelMaker.model.Frame frame) {
+		final Map<Direction, WireModelFrame> framesMap = new HashMap<>();
 
-		final List<AnimatedModelDefinition> definitions = new ArrayList<>();
-		for (int i = 0; i < definitionCount; i++) {
-			final String name = BinaryDataTools.marshalString(dis);
-			final WireModel wireModel = WireModelReadWrite.read(dis);
-			final Map<String, DirectionalSprite> defaultVisuals = readDefaultVisuals(spriteLibrary, dis);
-			final List<AnimationDefinition> animations = readAnimations(dis);
-			final String defaultAnimationName = BinaryDataTools.marshalString(dis);
+		framesMap.put(Direction.LEFT, buildWireModelFrame(frame, true));
+		framesMap.put(Direction.RIGHT, buildWireModelFrame(frame, false));
 
-			definitions.add(new AnimatedModelDefinition(name, wireModel, defaultVisuals, animations, defaultAnimationName));
+		return new DirectionalWireModelFrame(frame.getName(), framesMap);
+	}
+
+	private static WireModelFrame buildWireModelFrame(final raptor.modelMaker.model.Frame frame, final boolean isLeft) {
+		final List<Hardpoint> hardpoints = new ArrayList<>();
+
+		final int directionModifier = (isLeft) ? -1 : 1;
+
+		for (final Map.Entry<String, raptor.modelMaker.model.Frame.SavedHardpointPosition> savedPosition : frame.getSavedPositions().entrySet()) {
+			final raptor.modelMaker.model.Frame.SavedHardpointPosition position = savedPosition.getValue();
+			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier, position.getY(), position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
 		}
 
-		return definitions;
+		return new WireModelFrame(hardpoints.toArray(new Hardpoint[hardpoints.size()]));
 	}
 
-	private static Map<String, DirectionalSprite> readDefaultVisuals(final SpriteLibrary spriteLibrary, final DataInputStream dis) throws IOException {
-		final int visualCount = dis.readInt();
-
-		final Map<String, DirectionalSprite> defaultVisuals = new HashMap<>();
-		for (int i = 0; i < visualCount; i++) {
-			final String hardpointName = BinaryDataTools.marshalString(dis);
-			final String spriteName = BinaryDataTools.marshalString(dis);
-
-			final DirectionalSprite sprite = spriteLibrary.getSprite(spriteName);
-
-			if (sprite == null)
-				throw new IllegalArgumentException(String.format("The sprite '%s' does not exist in the sprite library", spriteName));
-
-			defaultVisuals.put(hardpointName, sprite);
+	private static class ModelMakerFileNameFilter implements FilenameFilter {
+		@Override
+		public boolean accept(final File dir, final String name) {
+			return name.endsWith(raptor.modelMaker.model.io.ModelWriter.MODEL_FILE_EXTENSION);
 		}
-
-		return defaultVisuals;
-	}
-
-	private static List<AnimationDefinition> readAnimations(final DataInputStream dis) throws IOException {
-		final int animationCount = dis.readInt();
-
-		final List<AnimationDefinition> animations = new ArrayList<>();
-		for (int i = 0; i < animationCount; i++)
-			animations.add(AnimationDefinitionReader.read(dis));
-
-		return animations;
 	}
 }

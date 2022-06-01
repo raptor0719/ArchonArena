@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import raptor.engine.model.DirectionalSprite;
 import raptor.engine.model.Model;
+import raptor.engine.model.SpriteModel;
 import raptor.engine.model.WireModel;
 
 public class AnimatedModel extends Model {
@@ -18,8 +18,8 @@ public class AnimatedModel extends Model {
 	private boolean deliveredActivationFrame;
 	private boolean loop;
 
-	public AnimatedModel(final WireModel wireModel, final Map<String, DirectionalSprite> defaultVisuals, final List<AnimationDefinition> animations, final AnimationDefinition defaultAnimation) {
-		super(wireModel, defaultVisuals);
+	public AnimatedModel(final WireModel wireModel, final SpriteModel spriteModel, final List<AnimationDefinition> animations, final AnimationDefinition defaultAnimation) {
+		super(wireModel, spriteModel);
 
 		if (!animations.contains(defaultAnimation))
 			throw new IllegalArgumentException("The default animation must exist in the provided animations.");
