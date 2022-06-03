@@ -12,11 +12,14 @@ import java.util.Map;
 import raptor.engine.model.Direction;
 import raptor.engine.model.DirectionalWireModelFrame;
 import raptor.engine.model.Hardpoint;
+import raptor.engine.model.SpriteCollection;
+import raptor.engine.model.SpriteModel;
 import raptor.engine.model.WireModel;
 import raptor.engine.model.WireModelFrame;
 import raptor.game.archonArena.asset.AnimatedModelLibrary;
 import raptor.game.archonArena.asset.SpriteLibrary;
 import raptor.game.archonArena.model.AnimatedModelDefinition;
+import raptor.game.archonArena.model.AnimationDefinition;
 
 public class AnimatedModelLibraryReader {
 	public static AnimatedModelLibrary read(final String modelDirectoryPath, final SpriteLibrary spriteLibrary) {
@@ -32,7 +35,7 @@ public class AnimatedModelLibraryReader {
 		final List<AnimatedModelDefinition> modelDefinitions = new ArrayList<>();
 
 		for (final File file : files) {
-			final AnimatedModelDefinition definition = createDefinition(file);
+			final AnimatedModelDefinition definition = createDefinition(file, spriteLibrary);
 
 			if (definition != null)
 				modelDefinitions.add(definition);
@@ -41,7 +44,7 @@ public class AnimatedModelLibraryReader {
 		return new AnimatedModelLibrary(modelDefinitions);
 	}
 
-	private static AnimatedModelDefinition createDefinition(final File file) {
+	private static AnimatedModelDefinition createDefinition(final File file, final SpriteLibrary spriteLibrary) {
 		InputStream istream = null;
 
 		try {
@@ -50,11 +53,10 @@ public class AnimatedModelLibraryReader {
 			final raptor.modelMaker.model.Model model = raptor.modelMaker.model.io.ModelReader.read(istream);
 
 			final WireModel wireModel = buildWireModel(model);
+			final SpriteModel spriteModel = buildSpriteModel(model, wireModel, spriteLibrary);
+			final List<AnimationDefinition> animations = buildAnimationDefinitions(model);
 
-			// TODO: Finish implementing model maker model to archon arena model bridge
-			// need SpriteModel and animation list
-
-			return new AnimatedModelDefinition(model.getName(), wireModel, null, null, "idle1");
+			return new AnimatedModelDefinition(model.getName(), wireModel, spriteModel, animations, "idle1");
 		} catch (final Throwable t) {
 			System.err.println(String.format("Failed to read model from file: %s", file.getAbsolutePath()));
 			t.printStackTrace(System.err);
@@ -100,6 +102,39 @@ public class AnimatedModelLibraryReader {
 
 		return new WireModelFrame(hardpoints.toArray(new Hardpoint[hardpoints.size()]));
 	}
+
+	private static SpriteModel buildSpriteModel(final raptor.modelMaker.model.Model source, final WireModel wireModel, final SpriteLibrary spriteLibrary) {
+		final Map<String, SpriteCollection> spriteCollections = new HashMap<>();
+
+		for (final raptor.modelMaker.model.Hardpoint sourceHardpoint : source.getHardpoints())
+			spriteCollections.put(sourceHardpoint.getName(), spriteLibrary.getSprite(sourceHardpoint.getSpriteCollectionName()));
+
+		return new SpriteModel(spriteCollections);
+	}
+
+	private static List<AnimationDefinition> buildAnimationDefinitions(final raptor.modelMaker.model.Model source) {
+		final List<AnimationDefinition> animationDefinitions = new ArrayList<>();
+
+		for (final raptor.modelMaker.model.Animation sourceAnimation : source.getAnimations()) {
+			final String[] frameNames = new String[sourceAnimation.size()];
+			for (int i = 0; i < frameNames.length; i++)
+				frameNames[i] = sourceAnimation.getFrame(i);
+
+			final int[] holds = new int[sourceAnimation.size()];
+			for (int i = 0; i < holds.length; i++)
+				holds[i] = sourceAnimation.getHolds(i);
+
+			final boolean[] activations = new boolean[sourceAnimation.size()];
+			for (int i = 0; i < activations.length; i++)
+				activations[i] = sourceAnimation.isActivation(i);
+
+			animationDefinitions.add(new AnimationDefinition(sourceAnimation.getName(), frameNames, holds, activations));
+		}
+
+		return animationDefinitions;
+	}
+
+	/* HELPER CLASSES */
 
 	private static class ModelMakerFileNameFilter implements FilenameFilter {
 		@Override
