@@ -4,23 +4,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import raptor.engine.model.DirectionalSprite;
+import raptor.engine.model.SpriteCollection;
 
 public class SpriteLibrary {
-	private final Map<String, DirectionalSprite> sprites;
+	private final Map<String, SpriteCollection> sprites;
 
-	public SpriteLibrary(final List<DirectionalSprite> sprites) {
+	public SpriteLibrary(final List<SpriteCollection> sprites) {
 		this.sprites = buildMap(sprites);
 	}
 
-	public DirectionalSprite getSprite(final String name) {
+	public SpriteCollection getSprite(final String name) {
 		return sprites.get(name);
 	}
 
-	private Map<String, DirectionalSprite> buildMap(final List<DirectionalSprite> sprites) {
-		final Map<String, DirectionalSprite> spriteMap = new HashMap<>();
+	private Map<String, SpriteCollection> buildMap(final List<SpriteCollection> sprites) {
+		final Map<String, SpriteCollection> spriteMap = new HashMap<>();
 
-		for (final DirectionalSprite s : sprites)
+		for (final SpriteCollection s : sprites)
 			spriteMap.put(s.getName(), s);
 
 		return spriteMap;
