@@ -11,8 +11,10 @@ public class AnimatedModelDefinition {
 	private final SpriteModel spriteModel;
 	private final List<AnimationDefinition> animations;
 	private final AnimationDefinition defaultAnimation;
+	private final int width;
+	private final int height;
 
-	public AnimatedModelDefinition(final String name, final WireModel wireModel, final SpriteModel spriteModel, final List<AnimationDefinition> animations, final String defaultAnimationName) {
+	public AnimatedModelDefinition(final String name, final WireModel wireModel, final SpriteModel spriteModel, final List<AnimationDefinition> animations, final String defaultAnimationName, final int width, final int height) {
 		this.name = name;
 		this.wireModel = wireModel;
 		this.spriteModel = spriteModel;
@@ -21,10 +23,21 @@ public class AnimatedModelDefinition {
 
 		if (defaultAnimation == null)
 			throw new IllegalArgumentException("The default animation must exist in the provided animations.");
+
+		this.width = width;
+		this.height = height;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 
 	public AnimatedModel getModelInstance() {

@@ -23,6 +23,7 @@ import raptor.engine.ui.input.KeyAction;
 import raptor.engine.ui.input.PhysicalInput;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.Polygon;
+import raptor.game.archonArena.main.ArchonArena;
 import raptor.game.archonArena.menu.MainMenu;
 import raptor.game.archonArena.unit.Unit;
 import raptor.game.archonArena.unit.UnitDefinition;
@@ -141,7 +142,7 @@ public class TestMap extends Level {
 
 		Game.getUserInterface().setState(gameplayState);
 
-		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", null, 5, 20, 20);
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 5);
 		testUnit = new Unit(testUnitDefinition, navigator);
 		testUnit.setX(200);
 		testUnit.setY(200);

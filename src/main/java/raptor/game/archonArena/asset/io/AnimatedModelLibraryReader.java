@@ -56,7 +56,7 @@ public class AnimatedModelLibraryReader {
 			final SpriteModel spriteModel = buildSpriteModel(model, wireModel, spriteLibrary);
 			final List<AnimationDefinition> animations = buildAnimationDefinitions(model);
 
-			return new AnimatedModelDefinition(model.getName(), wireModel, spriteModel, animations, "idle1");
+			return new AnimatedModelDefinition(model.getName(), wireModel, spriteModel, animations, "idle1", model.getWidth(), model.getHeight());
 		} catch (final Throwable t) {
 			System.err.println(String.format("Failed to read model from file: %s", file.getAbsolutePath()));
 			t.printStackTrace(System.err);
@@ -76,28 +76,28 @@ public class AnimatedModelLibraryReader {
 		final List<DirectionalWireModelFrame> frames = new ArrayList<>();
 
 		for (final raptor.modelMaker.model.Frame frame : model.getFrames())
-			frames.add(buildDirectionalWireModelFrame(frame));
+			frames.add(buildDirectionalWireModelFrame(frame, model.getWidth(), model.getCenterOffsetX(), model.getCenterOffsetY()));
 
 		return new WireModel(model.getName(), frames);
 	}
 
-	private static DirectionalWireModelFrame buildDirectionalWireModelFrame(final raptor.modelMaker.model.Frame frame) {
+	private static DirectionalWireModelFrame buildDirectionalWireModelFrame(final raptor.modelMaker.model.Frame frame, final int width, final int centerOffsetX, final int centerOffsetY) {
 		final Map<Direction, WireModelFrame> framesMap = new HashMap<>();
 
-		framesMap.put(Direction.LEFT, buildWireModelFrame(frame, true));
-		framesMap.put(Direction.RIGHT, buildWireModelFrame(frame, false));
+		framesMap.put(Direction.LEFT, buildWireModelFrame(frame, width, centerOffsetX, centerOffsetY, true));
+		framesMap.put(Direction.RIGHT, buildWireModelFrame(frame, width, centerOffsetX, centerOffsetY, false));
 
 		return new DirectionalWireModelFrame(frame.getName(), framesMap);
 	}
 
-	private static WireModelFrame buildWireModelFrame(final raptor.modelMaker.model.Frame frame, final boolean isLeft) {
+	private static WireModelFrame buildWireModelFrame(final raptor.modelMaker.model.Frame frame, final int width, final int centerOffsetX, final int centerOffsetY, final boolean isLeft) {
 		final List<Hardpoint> hardpoints = new ArrayList<>();
 
 		final int directionModifier = (isLeft) ? -1 : 1;
 
 		for (final Map.Entry<String, raptor.modelMaker.model.Frame.SavedHardpointPosition> savedPosition : frame.getSavedPositions().entrySet()) {
 			final raptor.modelMaker.model.Frame.SavedHardpointPosition position = savedPosition.getValue();
-			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier, position.getY(), position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
+			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier + (width/2) + centerOffsetX, position.getY() + centerOffsetY, position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
 		}
 
 		return new WireModelFrame(hardpoints.toArray(new Hardpoint[hardpoints.size()]));

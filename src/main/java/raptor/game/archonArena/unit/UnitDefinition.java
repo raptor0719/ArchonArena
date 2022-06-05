@@ -11,14 +11,14 @@ public class UnitDefinition {
 	private final int width;
 	private final int height;
 
-	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int moveSpeed, final int width, final int height) {
+	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int moveSpeed) {
 		this.name = name;
 		this.modelDefinition = modelDefinition;
 
 		this.moveSpeed = moveSpeed;
 
-		this.width = width;
-		this.height = height;
+		this.width = modelDefinition.getWidth();
+		this.height = modelDefinition.getHeight();
 	}
 
 	public String getName() {

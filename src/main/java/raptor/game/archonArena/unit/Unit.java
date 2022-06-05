@@ -1,6 +1,5 @@
 package raptor.game.archonArena.unit;
 
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +34,7 @@ public class Unit extends Entity {
 	private boolean isNewOrder;
 
 	public Unit(final UnitDefinition definition, final INavigator navigator) {
-		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance());
+		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getWidth(), definition.getHeight());
 
 		this.definition = definition;
 
@@ -78,29 +77,6 @@ public class Unit extends Entity {
 	}
 
 	@Override
-	public void draw(final IGraphics graphics) {
-		graphics.drawImage(_TEMP_rotateImage(_TEMP_sprite, getFacingInDegrees()),
-				UnitPositionToLowLevelCoordinateTranslator.translatePositionX(this),
-				UnitPositionToLowLevelCoordinateTranslator.translatePositionY(this));
-	}
-
-	private BufferedImage _TEMP_rotateImage(final BufferedImage image, final int degrees) {
-		final int width = image.getWidth();
-		final int height = image.getHeight();
-
-		final double radians = Math.toRadians(degrees);
-
-		final BufferedImage rotated = new BufferedImage(width, height, image.getType());
-
-		final Graphics2D g = rotated.createGraphics();
-
-		g.rotate(radians, width/2, height/2);
-		g.drawImage(image, null, 0, 0);
-
-		return rotated;
-	}
-
-	@Override
 	public void setX(final int x) {
 		super.setX(x);
 		navAgent.setPosition(x, getY());
@@ -110,6 +86,11 @@ public class Unit extends Entity {
 	public void setY(final int y) {
 		super.setY(y);
 		navAgent.setPosition(getX(), y);
+	}
+
+	@Override
+	protected void _draw(final IGraphics graphics) {
+//		graphics.drawRectangle(getX(), getY(), definition.getWidth(), definition.getHeight(), false, new BasicColor(0, 255, 0, 100));
 	}
 
 	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
