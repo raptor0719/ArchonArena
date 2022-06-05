@@ -14,9 +14,7 @@ import javax.swing.WindowConstants;
 
 import raptor.engine.display.render.JavaAwtRenderer;
 import raptor.engine.display.render.ViewportToLocationTransformer;
-import raptor.engine.game.Game;
 import raptor.engine.ui.input.JavaAwtInputManager;
-import raptor.game.archonArena.menu.MainMenu;
 
 public class Main {
 	public static void main(final String[] args) throws AWTException, InterruptedException {
@@ -48,9 +46,9 @@ public class Main {
 
 		displayPanel.requestFocusInWindow();
 
-		final Game game = new Game(new MainMenu(), renderer, inputManager, inputManager);
-
+		ArchonArena game = null;
 		try {
+			game = new ArchonArena("src/main/resources", renderer, inputManager, inputManager);
 			game.start();
 		} catch (final Throwable t) {
 			t.printStackTrace();
