@@ -1,34 +1,27 @@
 package raptor.game.archonArena.unit;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
-
-import javax.imageio.ImageIO;
 
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.game.Game;
 import raptor.engine.game.Terrain;
-import raptor.engine.game.entity.Entity;
 import raptor.engine.game.entity.IEntity;
 import raptor.engine.nav.agent.DefaultNavAgent;
 import raptor.engine.nav.api.INavAgent;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.util.geometry.DoubleVector;
+import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.unit.order.IOrder;
 import raptor.game.archonArena.unit.order.MoveOrder;
 
-public class Unit extends Entity {
+public class Unit extends AnimatedEntity {
 	private static final DoubleVector NORTH = new DoubleVector(0, -100);
 
 	private final UnitDefinition definition;
 
 	private final INavAgent navAgent;
 	private final Queue<IOrder> orderQueue;
-
-	private final BufferedImage _TEMP_sprite;
 
 	private IOrder currentOrder;
 	private boolean isNewOrder;
@@ -41,17 +34,15 @@ public class Unit extends Entity {
 		this.navAgent = new DefaultNavAgent(navigator);
 		this.orderQueue = new LinkedList<IOrder>();
 
-		try {
-			this._TEMP_sprite = ImageIO.read(new File("test-unit-sprite.png"));
-		} catch (final IOException e) {
-			throw new RuntimeException(e);
-		}
-
 		this.currentOrder = null;
+
+		getAnimatedModel().loopAnimation("idle1");
 	}
 
 	@Override
 	public void update() {
+		super.update();
+
 		if (currentOrder == null && orderQueue.isEmpty())
 			return;
 
@@ -122,6 +113,7 @@ public class Unit extends Entity {
 			navAgent.setPosition(getX(), getY());
 			navAgent.setDestination(moveOrder.getDestinationX(), moveOrder.getDestinationY());
 			isNewOrder = false;
+			getAnimatedModel().loopAnimation("walk1");
 		}
 
 		navAgent.move(definition.getMoveSpeed());
@@ -136,6 +128,7 @@ public class Unit extends Entity {
 
 	private void finishOrder() {
 		currentOrder = null;
+		getAnimatedModel().loopAnimation("idle1");
 	}
 
 	private int calculateFacingInDegrees(final DoubleVector facingVector) {
