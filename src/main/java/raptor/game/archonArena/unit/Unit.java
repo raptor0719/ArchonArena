@@ -27,7 +27,7 @@ public class Unit extends AnimatedEntity {
 	private boolean isNewOrder;
 
 	public Unit(final UnitDefinition definition, final INavigator navigator) {
-		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getWidth(), definition.getHeight());
+		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getSelectableWidth(), definition.getSelectableHeight());
 
 		this.definition = definition;
 

@@ -127,8 +127,8 @@ public class SelectionManager implements IDrawable {
 		final CollisionRectangle unitSelectableBox = new CollisionRectangle();
 		final int startX = UnitPositionToLowLevelCoordinateTranslator.translatePositionX(unit);
 		final int startY = UnitPositionToLowLevelCoordinateTranslator.translatePositionY(unit);
-		final int width = unit.getDefinition().getWidth();
-		final int height = unit.getDefinition().getHeight();
+		final int width = unit.getDefinition().getSelectableWidth();
+		final int height = unit.getDefinition().getSelectableHeight();
 		unitSelectableBox.setCollision(new Rectangle(startX, startY, startX + width, startY, startX, startY + height, startX + width, startY + height));
 
 		return selectionBox.collidesWithRectangle(unitSelectableBox);

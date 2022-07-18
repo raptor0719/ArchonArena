@@ -8,8 +8,8 @@ public class UnitDefinition {
 
 	private final int moveSpeed;
 
-	private final int width;
-	private final int height;
+	private final int selectableWidth;
+	private final int selectableHeight;
 
 	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int moveSpeed) {
 		this.name = name;
@@ -17,8 +17,8 @@ public class UnitDefinition {
 
 		this.moveSpeed = moveSpeed;
 
-		this.width = modelDefinition.getWidth();
-		this.height = modelDefinition.getHeight();
+		this.selectableWidth = modelDefinition.getWidth();
+		this.selectableHeight = modelDefinition.getHeight();
 	}
 
 	public String getName() {
@@ -33,11 +33,11 @@ public class UnitDefinition {
 		return moveSpeed;
 	}
 
-	public int getWidth() {
-		return width;
+	public int getSelectableWidth() {
+		return selectableWidth;
 	}
 
-	public int getHeight() {
-		return height;
+	public int getSelectableHeight() {
+		return selectableHeight;
 	}
 }
