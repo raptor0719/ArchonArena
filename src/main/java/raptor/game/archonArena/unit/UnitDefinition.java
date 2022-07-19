@@ -6,14 +6,18 @@ public class UnitDefinition {
 	private final String name;
 	private final AnimatedModelDefinition modelDefinition;
 
+	private final int unitSizeRadius;
+
 	private final int moveSpeed;
 
 	private final int selectableWidth;
 	private final int selectableHeight;
 
-	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int moveSpeed) {
+	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int unitSizeRadius, final int moveSpeed) {
 		this.name = name;
 		this.modelDefinition = modelDefinition;
+
+		this.unitSizeRadius = unitSizeRadius;
 
 		this.moveSpeed = moveSpeed;
 
@@ -27,6 +31,10 @@ public class UnitDefinition {
 
 	public AnimatedModelDefinition getModelDefintion() {
 		return modelDefinition;
+	}
+
+	public int getUnitSizeRadius() {
+		return unitSizeRadius;
 	}
 
 	public int getMoveSpeed() {

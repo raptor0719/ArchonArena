@@ -3,13 +3,13 @@ package raptor.game.archonArena.unit;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import raptor.engine.collision.geometry.CollisionCircle;
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.game.Game;
-import raptor.engine.game.Terrain;
-import raptor.engine.game.entity.IEntity;
 import raptor.engine.nav.agent.DefaultNavAgent;
 import raptor.engine.nav.api.INavAgent;
 import raptor.engine.nav.api.INavigator;
+import raptor.engine.util.geometry.Circle;
 import raptor.engine.util.geometry.DoubleVector;
 import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.unit.order.IOrder;
@@ -23,6 +23,9 @@ public class Unit extends AnimatedEntity {
 	private final INavAgent navAgent;
 	private final Queue<IOrder> orderQueue;
 
+	private UnitState currentState;
+	private UnitState newState;
+
 	private IOrder currentOrder;
 	private boolean isNewOrder;
 
@@ -31,17 +34,25 @@ public class Unit extends AnimatedEntity {
 
 		this.definition = definition;
 
+		this.setCollision(0, new CollisionCircle(new Circle(this.getPosition(), definition.getUnitSizeRadius())));
+
 		this.navAgent = new DefaultNavAgent(navigator);
 		this.orderQueue = new LinkedList<IOrder>();
 
-		this.currentOrder = null;
+		this.currentState = UnitState.WAIT;
+		this.newState = UnitState.WAIT;
 
-		getAnimatedModel().loopAnimation("idle1");
+		this.currentOrder = null;
 	}
 
 	@Override
 	public void update() {
 		super.update();
+
+		if (currentState != newState) {
+			currentState = newState;
+			getAnimatedModel().loopAnimation(currentState.getDefaultAnimationName());
+		}
 
 		if (currentOrder == null && orderQueue.isEmpty())
 			return;
@@ -53,18 +64,6 @@ public class Unit extends AnimatedEntity {
 
 		if (currentOrder instanceof MoveOrder)
 			move(isNewOrder);
-	}
-
-	@Override
-	public void handleEntityCollision(long planeId, IEntity entity) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void handleTerrainCollision(long planeId, Terrain terrain) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -82,6 +81,14 @@ public class Unit extends AnimatedEntity {
 	@Override
 	protected void _draw(final IGraphics graphics) {
 //		graphics.drawRectangle(getX(), getY(), definition.getWidth(), definition.getHeight(), false, new BasicColor(0, 255, 0, 100));
+	}
+
+	public UnitState getState() {
+		return currentState;
+	}
+
+	public void setState(final UnitState newState) {
+		this.newState = newState;
 	}
 
 	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
@@ -108,12 +115,12 @@ public class Unit extends AnimatedEntity {
 	// INTERNALS
 
 	private void move(final boolean setup) {
+		newState = UnitState.MOVE;
 		if (setup) {
 			final MoveOrder moveOrder = (MoveOrder)currentOrder;
 			navAgent.setPosition(getX(), getY());
 			navAgent.setDestination(moveOrder.getDestinationX(), moveOrder.getDestinationY());
 			isNewOrder = false;
-			getAnimatedModel().loopAnimation("walk1");
 		}
 
 		navAgent.move(definition.getMoveSpeed());
@@ -128,7 +135,7 @@ public class Unit extends AnimatedEntity {
 
 	private void finishOrder() {
 		currentOrder = null;
-		getAnimatedModel().loopAnimation("idle1");
+		newState = UnitState.WAIT;
 	}
 
 	private int calculateFacingInDegrees(final DoubleVector facingVector) {

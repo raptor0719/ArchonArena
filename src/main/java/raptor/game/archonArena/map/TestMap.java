@@ -3,6 +3,7 @@ package raptor.game.archonArena.map;
 import java.util.ArrayList;
 import java.util.List;
 
+import raptor.engine.collision.CollisionPlane;
 import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
@@ -142,12 +143,21 @@ public class TestMap extends Level {
 
 		Game.getUserInterface().setState(gameplayState);
 
-		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 5);
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, 5);
 		testUnit = new Unit(testUnitDefinition, navigator);
 		testUnit.setX(200);
 		testUnit.setY(200);
-
 		this.addEntity(testUnit);
+
+		final Unit testUnit2 = new Unit(testUnitDefinition, navigator);
+		testUnit2.setX(250);
+		testUnit2.setY(250);
+		this.addEntity(testUnit2);
+
+		this.addCollisionPlane(0, "ground", new MasterCollisionHandler());
+		final CollisionPlane plane = this.getCollisionPlane(0);
+		plane.registerEntity(testUnit);
+		plane.registerEntity(testUnit2);
 	}
 
 	@Override
