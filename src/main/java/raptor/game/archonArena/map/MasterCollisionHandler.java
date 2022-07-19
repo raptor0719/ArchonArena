@@ -13,52 +13,76 @@ import raptor.game.archonArena.unit.Unit;
 import raptor.game.archonArena.unit.UnitState;
 
 public class MasterCollisionHandler implements ICollisionPlaneHandler {
+	private enum CollisionType {
+		CAME_TO(0),
+		WENT_TO(1),
+		SHARED(0.5);
+
+		public final double resolutionShare;
+
+		private CollisionType(final double resolutionShare) {
+			this.resolutionShare = resolutionShare;
+		}
+	}
+
 	@Override
 	public void handleEntityCollision(final long planeId, final IEntity a, final IEntity b) {
 		final Unit unitA = (Unit)a;
 		final Unit unitB = (Unit)b;
 
-		final ICircle myCircle = ((CollisionCircle)unitA.getCollision(0)).getCollision();
-		final ICircle entityCircle = ((CollisionCircle)unitB.getCollision(0)).getCollision();
+		final ICircle circleA = ((CollisionCircle)unitA.getCollision(0)).getCollision();
+		final ICircle circleB = ((CollisionCircle)unitB.getCollision(0)).getCollision();
 
-		final IPoint myOrigin = myCircle.getOrigin();
-		final IPoint entityOrigin = entityCircle.getOrigin();
+		final IPoint originA = circleA.getOrigin();
+		final IPoint originB = circleB.getOrigin();
 
-		// Get the distance D I need to move back
-		//  Get current distance from my origin to your origin (this is our current pos)
-		//  Get sum of radii
-		final double currentSpaceBetween = Point.distanceTo(myOrigin.getX(), myOrigin.getY(), entityOrigin.getX(), entityOrigin.getY());
-		final int targetSpaceBetween = myCircle.getRadius() + entityCircle.getRadius();
+		final CollisionType collisionTypeA = resolveCollisionType(unitA.getState(), unitB.getState());
+		final CollisionType collisionTypeB = resolveCollisionType(unitB.getState(), unitA.getState());
+
+		final double currentSpaceBetween = Point.distanceTo(originA.getX(), originA.getY(), originB.getX(), originB.getY());
+		final int targetSpaceBetween = circleA.getRadius() + circleB.getRadius();
 
 		final double amountToMove = targetSpaceBetween - currentSpaceBetween;
 
-		// Get the direction A I need to move back
-		// Move back D units in direction A
-		//  set x/y of unit
-		//  set x/y of navagent
-		final Vector vectorFromYoursToMine = new Vector(myOrigin.getX() - entityOrigin.getX(), myOrigin.getY() - entityOrigin.getY());
-		final double currentDistanceMagnitude = vectorFromYoursToMine.getMagnitude();
+		final double resolutionShareA = collisionTypeA.resolutionShare;
+		final double resolutionShareB = collisionTypeB.resolutionShare;
+
+		if (collisionTypeA != CollisionType.CAME_TO)
+			resolveCollision(unitA, resolutionShareA, amountToMove, unitB);
+
+		if (collisionTypeB != CollisionType.CAME_TO)
+			resolveCollision(unitB, resolutionShareB, amountToMove, unitA);
+	}
+
+	private CollisionType resolveCollisionType(final UnitState a, final UnitState b) {
+		if (a == UnitState.MOVE && b != UnitState.MOVE)
+			return CollisionType.WENT_TO;
+		else if (a != UnitState.MOVE && b == UnitState.MOVE)
+			return CollisionType.CAME_TO;
+		else
+			return CollisionType.SHARED;
+	}
+
+	private void resolveCollision(final Unit subject, final double resolutionShare, final double amountToMove, final Unit other) {
+		final Unit unitSubject = subject;
+		final Unit unitOther = other;
+
+		final ICircle subjectCircle = ((CollisionCircle)unitSubject.getCollision(0)).getCollision();
+		final ICircle otherCircle = ((CollisionCircle)unitOther.getCollision(0)).getCollision();
+
+		final IPoint subjectOrigin = subjectCircle.getOrigin();
+		final IPoint otherOrigin = otherCircle.getOrigin();
+
+		final Vector vectorFromOtherToSubject = new Vector(subjectOrigin.getX() - otherOrigin.getX(), subjectOrigin.getY() - otherOrigin.getY());
+		final double currentDistanceMagnitude = vectorFromOtherToSubject.getMagnitude();
 		final double movementFactor = amountToMove/currentDistanceMagnitude;
-		final double shareResolutionFactor = (shareResolution) ? 0.5 : 1;
-		final DoubleVector movementVector = new DoubleVector(vectorFromYoursToMine.getX() * movementFactor * shareResolutionFactor, vectorFromYoursToMine.getY() * movementFactor * shareResolutionFactor);
+		final DoubleVector movementVector = new DoubleVector(vectorFromOtherToSubject.getX() * movementFactor * resolutionShare, vectorFromOtherToSubject.getY() * movementFactor * resolutionShare);
 
-		final int newX = (int)Math.round(myOrigin.getX() + movementVector.getX());
-		final int newY = (int)Math.round(myOrigin.getY() + movementVector.getY());
+		final int newX = (int)Math.round(subjectOrigin.getX() + movementVector.getX());
+		final int newY = (int)Math.round(subjectOrigin.getY() + movementVector.getY());
 
-		this.setX(newX);
-		this.setY(newY);
-
-		if (shareResolution) {
-			final Vector vectorFromMineToYours = new Vector(entityOrigin.getX() - myOrigin.getX(), entityOrigin.getY() - myOrigin.getY());
-			final DoubleVector yourMovementVector = new DoubleVector(vectorFromMineToYours.getX() * movementFactor * shareResolutionFactor, vectorFromMineToYours.getY() * movementFactor * shareResolutionFactor);
-
-			final int yourNewX = (int)Math.round(entityOrigin.getX() + yourMovementVector.getX());
-			final int yourNewY = (int)Math.round(entityOrigin.getY() + yourMovementVector.getY());
-
-			entityUnit.setX(yourNewX);
-			entityUnit.setY(yourNewY);
-			entityUnit.setState(UnitState.WAIT);
-		}
+		subject.setX(newX);
+		subject.setY(newY);
 	}
 
 	@Override
