@@ -11,6 +11,7 @@ import raptor.engine.nav.api.INavAgent;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.util.geometry.Circle;
 import raptor.engine.util.geometry.DoubleVector;
+import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.unit.order.IOrder;
 import raptor.game.archonArena.unit.order.MoveOrder;
@@ -29,7 +30,7 @@ public class Unit extends AnimatedEntity {
 	private IOrder currentOrder;
 	private boolean isNewOrder;
 
-	public Unit(final UnitDefinition definition, final INavigator navigator) {
+	public Unit(final UnitDefinition definition, final INavigator navigator, final IPoint startPosition) {
 		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getSelectableWidth(), definition.getSelectableHeight());
 
 		this.definition = definition;
@@ -43,6 +44,10 @@ public class Unit extends AnimatedEntity {
 		this.newState = UnitState.WAIT;
 
 		this.currentOrder = null;
+
+		super.setX(startPosition.getX());
+		super.setY(startPosition.getY());
+		navAgent.setPosition(getX(), getY());
 	}
 
 	@Override

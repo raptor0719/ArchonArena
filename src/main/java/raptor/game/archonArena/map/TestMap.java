@@ -144,19 +144,13 @@ public class TestMap extends Level {
 		Game.getUserInterface().setState(gameplayState);
 
 		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, 5);
-		testUnit = new Unit(testUnitDefinition, navigator);
-		testUnit.setX(200);
-		testUnit.setY(200);
+		testUnit = new Unit(testUnitDefinition, navigator, new Point(200, 200));
 		this.addEntity(testUnit);
 
-		final Unit testUnit2 = new Unit(testUnitDefinition, navigator);
-		testUnit2.setX(250);
-		testUnit2.setY(250);
+		final Unit testUnit2 = new Unit(testUnitDefinition, navigator, new Point(250, 250));
 		this.addEntity(testUnit2);
 
-		final Unit testUnit3 = new Unit(testUnitDefinition, navigator);
-		testUnit3.setX(250);
-		testUnit3.setY(300);
+		final Unit testUnit3 = new Unit(testUnitDefinition, navigator, new Point(250, 300));
 		this.addEntity(testUnit3);
 
 		this.addCollisionPlane(0, "ground", new MasterCollisionHandler());
