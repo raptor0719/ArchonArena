@@ -154,10 +154,16 @@ public class TestMap extends Level {
 		testUnit2.setY(250);
 		this.addEntity(testUnit2);
 
+		final Unit testUnit3 = new Unit(testUnitDefinition, navigator);
+		testUnit3.setX(250);
+		testUnit3.setY(300);
+		this.addEntity(testUnit3);
+
 		this.addCollisionPlane(0, "ground", new MasterCollisionHandler());
 		final CollisionPlane plane = this.getCollisionPlane(0);
 		plane.registerEntity(testUnit);
 		plane.registerEntity(testUnit2);
+		plane.registerEntity(testUnit3);
 	}
 
 	@Override
