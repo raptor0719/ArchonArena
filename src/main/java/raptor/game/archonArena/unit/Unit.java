@@ -11,6 +11,7 @@ import raptor.engine.nav.api.INavAgent;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.util.geometry.Circle;
 import raptor.engine.util.geometry.DoubleVector;
+import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.unit.order.IOrder;
@@ -32,6 +33,11 @@ public class Unit extends AnimatedEntity {
 
 	private int teamId;
 
+	// Stuck detection
+	private static final int STUCK_MAX_COUNTER = 34;
+	private Point stuckPosition;
+	private int stuckCounter;
+
 	public Unit(final UnitDefinition definition, final INavigator navigator, final IPoint startPosition, final int teamId) {
 		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getSelectableWidth(), definition.getSelectableHeight());
 
@@ -52,6 +58,9 @@ public class Unit extends AnimatedEntity {
 		navAgent.setPosition(getX(), getY());
 
 		this.teamId = teamId;
+
+		this.stuckPosition = new Point(this.getPosition().getX(), this.getPosition().getY());
+		this.stuckCounter = 0;
 	}
 
 	@Override
@@ -63,8 +72,25 @@ public class Unit extends AnimatedEntity {
 			getAnimatedModel().loopAnimation(currentState.getDefaultAnimationName());
 		}
 
-		if (currentOrder == null && orderQueue.isEmpty())
+		if (currentState == UnitState.MOVE) {
+			if (this.getPosition().equals(stuckPosition)) {
+				stuckCounter++;
+			} else {
+				stuckPosition.setX(this.getPosition().getX());
+				stuckPosition.setY(this.getPosition().getY());
+				stuckCounter = 0;
+			}
+
+			if (stuckCounter >= STUCK_MAX_COUNTER) {
+				stopOrder();
+				stuckCounter = 0;
+			}
+		}
+
+		if (currentOrder == null && orderQueue.isEmpty()) {
+			newState = UnitState.WAIT;
 			return;
+		}
 
 		if (currentOrder == null) {
 			currentOrder = orderQueue.poll();
@@ -115,6 +141,7 @@ public class Unit extends AnimatedEntity {
 	public void stopOrder() {
 		orderQueue.clear();
 		currentOrder = null;
+		newState = UnitState.WAIT;
 	}
 
 	public int getTeam() {
@@ -148,7 +175,6 @@ public class Unit extends AnimatedEntity {
 
 	private void finishOrder() {
 		currentOrder = null;
-		newState = UnitState.WAIT;
 	}
 
 	private int calculateFacingInDegrees(final DoubleVector facingVector) {
