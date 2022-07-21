@@ -1,7 +1,9 @@
 package raptor.game.archonArena.unit.selection;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import raptor.engine.collision.geometry.CollisionRectangle;
@@ -73,7 +75,10 @@ public class SelectionManager implements IDrawable {
 		final CollisionRectangle selectionBox = new CollisionRectangle();
 		selectionBox.setCollision(new Rectangle(start, new Point(start.getX(), end.getY()), new Point(end.getX(), start.getY()), end));
 
+		final boolean onlySelectOne = selectionBox.getCollision().getArea() <= 1;
+
 		boolean needToClear = !append;
+		final List<Unit> actionableUnits = new ArrayList<Unit>();
 		for (final IEntity entity : Game.getCurrentLevel().getAllEntities()) {
 			if (!(entity instanceof Unit))
 				continue;
@@ -86,11 +91,29 @@ public class SelectionManager implements IDrawable {
 					needToClear = false;
 				}
 
-				if (remove)
-					currentSelected.remove(unit);
-				else
-					currentSelected.add(unit);
+				if (onlySelectOne) {
+					if (actionableUnits.isEmpty()) {
+						actionableUnits.add(unit);
+						continue;
+					}
+
+					final Unit currentProspect = actionableUnits.get(0);
+
+					if (currentProspect.getPosition().getY() < unit.getPosition().getY()) {
+						actionableUnits.remove(0);
+						actionableUnits.add(unit);
+					}
+				} else {
+					actionableUnits.add(unit);
+				}
 			}
+		}
+
+		for (final Unit unit : actionableUnits) {
+			if (remove)
+				currentSelected.remove(unit);
+			else
+				currentSelected.add(unit);
 		}
 	}
 
