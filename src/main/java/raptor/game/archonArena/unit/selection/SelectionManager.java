@@ -24,6 +24,8 @@ public class SelectionManager implements IDrawable {
 
 	private static final IColor SELECTED_UNIT_BOX_COLOR = new BasicColor(0, 255, 0, 150);
 
+	private final int teamId;
+
 	private final Set<Unit> currentSelected;
 
 	private final Point start;
@@ -34,7 +36,9 @@ public class SelectionManager implements IDrawable {
 	private boolean append;
 	private boolean remove;
 
-	public SelectionManager() {
+	public SelectionManager(final int teamId) {
+		this.teamId = teamId;
+
 		this.currentSelected = new HashSet<Unit>();
 
 		this.start = new Point(0, 0);
@@ -85,7 +89,7 @@ public class SelectionManager implements IDrawable {
 
 			final Unit unit = (Unit)entity;
 
-			if (isInSelectionBox(selectionBox, unit)) {
+			if (isInSelectionBox(selectionBox, unit) && unit.getTeam() == teamId) {
 				if (needToClear) {
 					clearSelected();
 					needToClear = false;

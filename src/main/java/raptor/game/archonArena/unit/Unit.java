@@ -30,7 +30,9 @@ public class Unit extends AnimatedEntity {
 	private IOrder currentOrder;
 	private boolean isNewOrder;
 
-	public Unit(final UnitDefinition definition, final INavigator navigator, final IPoint startPosition) {
+	private int teamId;
+
+	public Unit(final UnitDefinition definition, final INavigator navigator, final IPoint startPosition, final int teamId) {
 		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getSelectableWidth(), definition.getSelectableHeight());
 
 		this.definition = definition;
@@ -48,6 +50,8 @@ public class Unit extends AnimatedEntity {
 		super.setX(startPosition.getX());
 		super.setY(startPosition.getY());
 		navAgent.setPosition(getX(), getY());
+
+		this.teamId = teamId;
 	}
 
 	@Override
@@ -111,6 +115,10 @@ public class Unit extends AnimatedEntity {
 	public void stopOrder() {
 		orderQueue.clear();
 		currentOrder = null;
+	}
+
+	public int getTeam() {
+		return teamId;
 	}
 
 	public UnitDefinition getDefinition() {
