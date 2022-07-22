@@ -36,6 +36,8 @@ public class TestMap extends Level {
 	private final UIState gameplayState;
 	private UIButton exitLevelButton;
 
+	private final int viewportMoveFactor;
+	private final int viewportMouseMoveFactor;
 	int viewportMoveX = 0;
 	int viewportMoveY = 0;
 
@@ -44,6 +46,9 @@ public class TestMap extends Level {
 	public TestMap() {
 		this.selectionManager = new SelectionManager(0);
 		this.gameplayState = new UIState();
+
+		this.viewportMoveFactor = 10;
+		this.viewportMouseMoveFactor = 10;
 	}
 
 	@Override
@@ -164,11 +169,20 @@ public class TestMap extends Level {
 	public void update() {
 		final IViewport viewport = Game.getRenderer().getViewport();
 
-		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*3);
-		viewport.setYPosition(viewport.getYPosition() + viewportMoveY*3);
+		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*viewportMoveFactor);
+		viewport.setYPosition(viewport.getYPosition() + viewportMoveY*viewportMoveFactor);
 
 		final int mousePositionX = Game.getUserInterface().getMousePositionX();
 		final int mousePositionY = Game.getUserInterface().getMousePositionY();
+
+		if (mousePositionX >= viewport.getWidth())
+			viewport.setXPosition(viewport.getXPosition() + viewportMouseMoveFactor);
+		else if (mousePositionX <= 0)
+			viewport.setXPosition(viewport.getXPosition() - viewportMouseMoveFactor);
+		else if (mousePositionY >= viewport.getHeight())
+			viewport.setYPosition(viewport.getYPosition() + viewportMouseMoveFactor);
+		else if (mousePositionY <= 0)
+			viewport.setYPosition(viewport.getYPosition() - viewportMouseMoveFactor);
 
 		final ViewportToLocationTransformer t = Game.getViewportToLocation();
 		selectionManager.setSelectionEnd(t.transformX(mousePositionX), t.transformY(mousePositionY));
