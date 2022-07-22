@@ -2,26 +2,29 @@ package raptor.game.archonArena.main;
 
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 
 import raptor.engine.display.render.JavaAwtRenderer;
-import raptor.engine.display.render.ViewportToLocationTransformer;
 import raptor.engine.ui.input.JavaAwtInputManager;
 
 public class Main {
 	public static void main(final String[] args) throws AWTException, InterruptedException {
 		final GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		final GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
+		final GraphicsDevice usedGraphicsDevice = graphicsDevices[1];
 
-		final JFrame jframe = new JFrame(graphicsDevices[1].getDefaultConfiguration());
+		final JFrame jframe = new JFrame(usedGraphicsDevice.getDefaultConfiguration());
 		jframe.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		jframe.setUndecorated(true);
 		jframe.setVisible(true);
@@ -34,15 +37,16 @@ public class Main {
 		jframe.add(displayPanel);
 		displayPanel.setVisible(true);
 		displayPanel.setBackground(Color.BLACK);
+		displayPanel.setCursor(getInvisibleCursor());
 
 		Thread.sleep(250);
 
 		final JavaAwtRenderer renderer = new JavaAwtRenderer((Graphics2D)displayPanel.getGraphics(), displayPanel.getWidth(), displayPanel.getHeight());
-		final ViewportToLocationTransformer viewportToLocationTransformer = new ViewportToLocationTransformer(renderer.getViewport());
-		final JavaAwtInputManager inputManager = new JavaAwtInputManager(viewportToLocationTransformer);
+		final JavaAwtInputManager inputManager = new JavaAwtInputManager(usedGraphicsDevice, renderer.getViewport());
 
 		displayPanel.addMouseListener(inputManager);
 		displayPanel.addKeyListener(inputManager);
+		displayPanel.addMouseMotionListener(inputManager);
 
 		displayPanel.requestFocusInWindow();
 
@@ -55,5 +59,9 @@ public class Main {
 		}
 
 		jframe.dispose();
+	}
+
+	private static Cursor getInvisibleCursor() {
+		return Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), new java.awt.Point(0, 0), "spooky");
 	}
 }
