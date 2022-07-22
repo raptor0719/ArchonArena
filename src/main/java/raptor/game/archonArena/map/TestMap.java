@@ -167,9 +167,11 @@ public class TestMap extends Level {
 		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*3);
 		viewport.setYPosition(viewport.getYPosition() + viewportMoveY*3);
 
-		final Point mousePosition = Game.getUserInterface().getMousePosition();
+		final int mousePositionX = Game.getUserInterface().getMousePositionX();
+		final int mousePositionY = Game.getUserInterface().getMousePositionY();
+
 		final ViewportToLocationTransformer t = Game.getViewportToLocation();
-		selectionManager.setSelectionEnd(t.transformX(mousePosition.getX()), t.transformY(mousePosition.getY()));
+		selectionManager.setSelectionEnd(t.transformX(mousePositionX), t.transformY(mousePositionY));
 	}
 
 	@Override
