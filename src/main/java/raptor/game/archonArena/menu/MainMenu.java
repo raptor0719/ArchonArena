@@ -14,6 +14,7 @@ import raptor.engine.ui.input.IInputMap;
 import raptor.engine.ui.input.InputMap;
 import raptor.engine.ui.input.KeyAction;
 import raptor.engine.ui.input.PhysicalInput;
+import raptor.game.archonArena.main.ArchonArena;
 import raptor.game.archonArena.map.TestMap;
 
 public class MainMenu extends Level {
@@ -50,6 +51,8 @@ public class MainMenu extends Level {
 		mainMenuState.setInputMap(inputMap);
 
 		Game.getUserInterface().setState(mainMenuState);
+
+		ArchonArena.getArchonArenaUserInterface().getSelectionManager().setRender(false);
 	}
 
 	@Override

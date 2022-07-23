@@ -24,30 +24,35 @@ public class SelectionManager implements IDrawable {
 
 	private static final IColor SELECTED_UNIT_BOX_COLOR = new BasicColor(0, 255, 0, 150);
 
-	private final int teamId;
-
 	private final Set<Unit> currentSelected;
 
 	private final Point start;
 	private final Point end;
+
+	private int teamId;
 
 	private boolean selectionActive;
 
 	private boolean append;
 	private boolean remove;
 
-	public SelectionManager(final int teamId) {
-		this.teamId = teamId;
+	private boolean render;
+
+	public SelectionManager() {
 
 		this.currentSelected = new HashSet<Unit>();
 
 		this.start = new Point(0, 0);
 		this.end = new Point(0, 0);
 
+		this.teamId = 0;
+
 		this.selectionActive = false;
 
 		this.append = false;
 		this.remove = false;
+
+		this.render = false;
 	}
 
 	public Iterator<Unit> getSelected() {
@@ -138,8 +143,23 @@ public class SelectionManager implements IDrawable {
 			unit.moveOrder(pointX, pointY, queue);
 	}
 
+	public void setCurrentTeam(final int teamId) {
+		this.teamId = teamId;
+	}
+
+	public boolean isRender() {
+		return render;
+	}
+
+	public void setRender(final boolean render) {
+		this.render = render;
+	}
+
 	@Override
 	public void draw(final IGraphics graphics) {
+		if (!render)
+			return;
+
 		for (final Unit unit : currentSelected) {
 			final int x = UnitPositionToLowLevelCoordinateTranslator.translatePositionX(unit);
 			final int y = UnitPositionToLowLevelCoordinateTranslator.translatePositionY(unit);

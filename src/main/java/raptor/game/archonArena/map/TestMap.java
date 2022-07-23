@@ -31,8 +31,6 @@ import raptor.game.archonArena.unit.UnitDefinition;
 import raptor.game.archonArena.unit.selection.SelectionManager;
 
 public class TestMap extends Level {
-	private final SelectionManager selectionManager;
-
 	private final UIState gameplayState;
 	private UIButton exitLevelButton;
 
@@ -44,7 +42,6 @@ public class TestMap extends Level {
 	Unit testUnit;
 
 	public TestMap() {
-		this.selectionManager = new SelectionManager(0);
 		this.gameplayState = new UIState();
 
 		this.viewportMoveFactor = 10;
@@ -127,19 +124,19 @@ public class TestMap extends Level {
 		gameplayState.addActionHandler("SELECTION_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				selectionManager.startSelection(gameMouseX, gameMouseY);
+				ArchonArena.getArchonArenaUserInterface().getSelectionManager().startSelection(gameMouseX, gameMouseY);
 			}
 		});
 		gameplayState.addActionHandler("SELECTION_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				selectionManager.select();
+				ArchonArena.getArchonArenaUserInterface().getSelectionManager().select();
 			}
 		});
 		gameplayState.addActionHandler("ORDER_TARGET", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				selectionManager.moveOrder(gameMouseX, gameMouseY, false);
+				ArchonArena.getArchonArenaUserInterface().getSelectionManager().moveOrder(gameMouseX, gameMouseY, false);
 			}
 		});
 
@@ -163,6 +160,17 @@ public class TestMap extends Level {
 		plane.registerEntity(testUnit);
 		plane.registerEntity(testUnit2);
 		plane.registerEntity(testUnit3);
+
+		ArchonArena.getArchonArenaUserInterface().getSelectionManager().setRender(true);
+	}
+
+	@Override
+	public void cleanup() {
+		final SelectionManager selectionManager = ArchonArena.getArchonArenaUserInterface().getSelectionManager();
+
+		selectionManager.cancelSelection();
+		selectionManager.clearSelected();
+		selectionManager.setRender(false);
 	}
 
 	@Override
@@ -185,7 +193,7 @@ public class TestMap extends Level {
 			viewport.setYPosition(viewport.getYPosition() - viewportMouseMoveFactor);
 
 		final ViewportToLocationTransformer t = Game.getViewportToLocation();
-		selectionManager.setSelectionEnd(t.transformX(mousePositionX), t.transformY(mousePositionY));
+		ArchonArena.getArchonArenaUserInterface().getSelectionManager().setSelectionEnd(t.transformX(mousePositionX), t.transformY(mousePositionY));
 	}
 
 	@Override
@@ -201,8 +209,6 @@ public class TestMap extends Level {
 		graphics.drawLine(300, 150, 300, 350, 2, color);
 		graphics.drawLine(300, 350, 450, 200, 2, color);
 		graphics.drawLine(450, 200, 300, 150, 2, color);
-
-		selectionManager.draw(graphics);
 	}
 
 	private NavMeshNavigator getTestNavigator() {
