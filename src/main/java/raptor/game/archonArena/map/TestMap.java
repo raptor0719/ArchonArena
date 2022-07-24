@@ -29,6 +29,7 @@ import raptor.game.archonArena.menu.MainMenu;
 import raptor.game.archonArena.unit.Unit;
 import raptor.game.archonArena.unit.UnitDefinition;
 import raptor.game.archonArena.unit.selection.SelectionManager;
+import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class TestMap extends Level {
 	private final UIState gameplayState;
@@ -145,7 +146,7 @@ public class TestMap extends Level {
 
 		Game.getUserInterface().setState(gameplayState);
 
-		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, 5);
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, new StatBlock(5, 100));
 		testUnit = new Unit(testUnitDefinition, navigator, new Point(200, 200), 0);
 		this.addEntity(testUnit);
 

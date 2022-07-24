@@ -16,6 +16,7 @@ import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.unit.order.IOrder;
 import raptor.game.archonArena.unit.order.MoveOrder;
+import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class Unit extends AnimatedEntity {
 	private static final DoubleVector NORTH = new DoubleVector(0, -100);
@@ -24,6 +25,8 @@ public class Unit extends AnimatedEntity {
 
 	private final INavAgent navAgent;
 	private final Queue<IOrder> orderQueue;
+
+	private final StatBlock statBlock;
 
 	private UnitState currentState;
 	private UnitState newState;
@@ -47,6 +50,8 @@ public class Unit extends AnimatedEntity {
 
 		this.navAgent = new DefaultNavAgent(navigator);
 		this.orderQueue = new LinkedList<IOrder>();
+
+		this.statBlock = new StatBlock(definition.getBaseStatBlock());
 
 		this.currentState = UnitState.WAIT;
 		this.newState = UnitState.WAIT;
@@ -163,7 +168,7 @@ public class Unit extends AnimatedEntity {
 			isNewOrder = false;
 		}
 
-		navAgent.move(definition.getMoveSpeed());
+		navAgent.move(statBlock.getMoveSpeed());
 
 		super.setX(navAgent.getPositionX());
 		super.setY(navAgent.getPositionY());
