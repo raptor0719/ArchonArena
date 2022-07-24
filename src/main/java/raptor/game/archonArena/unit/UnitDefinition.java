@@ -1,6 +1,7 @@
 package raptor.game.archonArena.unit;
 
 import raptor.game.archonArena.model.AnimatedModelDefinition;
+import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class UnitDefinition {
 	private final String name;
@@ -8,21 +9,21 @@ public class UnitDefinition {
 
 	private final int unitSizeRadius;
 
-	private final int moveSpeed;
-
 	private final int selectableWidth;
 	private final int selectableHeight;
 
-	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int unitSizeRadius, final int moveSpeed) {
+	private final StatBlock baseStateBlock;
+
+	public UnitDefinition(final String name, final AnimatedModelDefinition modelDefinition, final int unitSizeRadius, final StatBlock baseStateBlock) {
 		this.name = name;
 		this.modelDefinition = modelDefinition;
 
 		this.unitSizeRadius = unitSizeRadius;
 
-		this.moveSpeed = moveSpeed;
-
 		this.selectableWidth = modelDefinition.getWidth();
 		this.selectableHeight = modelDefinition.getHeight();
+
+		this.baseStateBlock = baseStateBlock;
 	}
 
 	public String getName() {
@@ -37,15 +38,15 @@ public class UnitDefinition {
 		return unitSizeRadius;
 	}
 
-	public int getMoveSpeed() {
-		return moveSpeed;
-	}
-
 	public int getSelectableWidth() {
 		return selectableWidth;
 	}
 
 	public int getSelectableHeight() {
 		return selectableHeight;
+	}
+
+	public StatBlock getBaseStatBlock() {
+		return baseStateBlock;
 	}
 }
