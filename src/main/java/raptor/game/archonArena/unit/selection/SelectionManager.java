@@ -15,6 +15,7 @@ import raptor.engine.game.Game;
 import raptor.engine.game.entity.IEntity;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.Rectangle;
+import raptor.game.archonArena.main.ArchonArena;
 import raptor.game.archonArena.unit.Unit;
 import raptor.game.archonArena.unit.UnitPositionToLowLevelCoordinateTranslator;
 
@@ -29,8 +30,6 @@ public class SelectionManager implements IDrawable {
 	private final Point start;
 	private final Point end;
 
-	private int teamId;
-
 	private boolean selectionActive;
 
 	private boolean append;
@@ -44,8 +43,6 @@ public class SelectionManager implements IDrawable {
 
 		this.start = new Point(0, 0);
 		this.end = new Point(0, 0);
-
-		this.teamId = 0;
 
 		this.selectionActive = false;
 
@@ -94,7 +91,7 @@ public class SelectionManager implements IDrawable {
 
 			final Unit unit = (Unit)entity;
 
-			if (isInSelectionBox(selectionBox, unit) && unit.getTeam() == teamId) {
+			if (isInSelectionBox(selectionBox, unit) && unit.getTeam() == ArchonArena.getPlayer().getTeamId()) {
 				if (needToClear) {
 					clearSelected();
 					needToClear = false;
@@ -141,10 +138,6 @@ public class SelectionManager implements IDrawable {
 	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
 		for (final Unit unit : currentSelected)
 			unit.moveOrder(pointX, pointY, queue);
-	}
-
-	public void setCurrentTeam(final int teamId) {
-		this.teamId = teamId;
 	}
 
 	public boolean isRender() {

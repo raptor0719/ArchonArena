@@ -19,12 +19,14 @@ public class ArchonArena extends Game {
 	private static AnimatedModelLibrary modelLibrary = null;
 	private static SpriteLibrary spriteLibrary = null;
 	private static ArchonArenaUserInterface archonArenaUserInterface = null;
+	private static Player player;
 
 	public ArchonArena(final String assetDirectoryPath, final IRenderer setRenderer, final IInputManager inputManager, final IMousePositionPoll mousePositionPoll) {
 		super(new MainMenu(), setRenderer, inputManager, mousePositionPoll);
 
 		ArchonArena.spriteLibrary = SpriteLibraryReader.read(assetDirectoryPath + SPRITE_LIBRARY_SUBPATH);
 		ArchonArena.modelLibrary = AnimatedModelLibraryReader.read(assetDirectoryPath + MODEL_DIRECTORY_SUBPATH, ArchonArena.spriteLibrary);
+		ArchonArena.player = new Player();
 	}
 
 	@Override
@@ -43,5 +45,9 @@ public class ArchonArena extends Game {
 
 	public static SpriteLibrary getSpriteLibrary() {
 		return spriteLibrary;
+	}
+
+	public static Player getPlayer() {
+		return player;
 	}
 }
