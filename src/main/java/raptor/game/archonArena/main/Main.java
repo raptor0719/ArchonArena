@@ -20,6 +20,8 @@ import raptor.engine.ui.input.JavaAwtInputManager;
 
 public class Main {
 	public static void main(final String[] args) throws AWTException, InterruptedException {
+		System.setProperty("sun.java2d.opengl", "true");
+
 		final GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		final GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		final GraphicsDevice usedGraphicsDevice = graphicsDevices[1];
@@ -41,7 +43,7 @@ public class Main {
 
 		Thread.sleep(250);
 
-		final JavaAwtRenderer renderer = new JavaAwtRenderer((Graphics2D)displayPanel.getGraphics(), displayPanel.getWidth(), displayPanel.getHeight());
+		final JavaAwtRenderer renderer = new JavaAwtRenderer((Graphics2D)displayPanel.getGraphics(), displayPanel.getWidth(), displayPanel.getHeight(), usedGraphicsDevice);
 		final JavaAwtInputManager inputManager = new JavaAwtInputManager(usedGraphicsDevice, renderer.getViewport());
 
 		displayPanel.addMouseListener(inputManager);
