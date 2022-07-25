@@ -10,7 +10,6 @@ import raptor.engine.display.render.IGraphics;
 import raptor.engine.display.render.IViewport;
 import raptor.engine.display.render.ViewportToLocationTransformer;
 import raptor.engine.game.Game;
-import raptor.engine.game.Level;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.nav.mesh.NavMeshNavigator;
 import raptor.engine.ui.UIAnchorPoint;
@@ -31,7 +30,7 @@ import raptor.game.archonArena.unit.UnitDefinition;
 import raptor.game.archonArena.unit.selection.SelectionManager;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
-public class TestMap extends Level {
+public class TestMap extends ArchonArenaLevel {
 	private final UIState gameplayState;
 	private UIButton exitLevelButton;
 
@@ -43,6 +42,7 @@ public class TestMap extends Level {
 	Unit testUnit;
 
 	public TestMap() {
+		super();
 		this.gameplayState = new UIState();
 
 		this.viewportMoveFactor = 10;
@@ -156,7 +156,7 @@ public class TestMap extends Level {
 		final Unit testUnit3 = new Unit(testUnitDefinition, navigator, new Point(250, 300), 1);
 		this.addEntity(testUnit3);
 
-		this.addCollisionPlane(0, "ground", new MasterCollisionHandler());
+		this.addCollisionPlane(Navigators.GROUND.getId(), Navigators.GROUND.getName(), new MasterCollisionHandler());
 		final CollisionPlane plane = this.getCollisionPlane(0);
 		plane.registerEntity(testUnit);
 		plane.registerEntity(testUnit2);
@@ -176,6 +176,8 @@ public class TestMap extends Level {
 
 	@Override
 	public void update() {
+		this.getVisionCalculator().calculateVision();
+
 		final IViewport viewport = Game.getRenderer().getViewport();
 
 		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*viewportMoveFactor);

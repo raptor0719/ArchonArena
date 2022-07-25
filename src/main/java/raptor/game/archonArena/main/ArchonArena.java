@@ -9,10 +9,13 @@ import raptor.game.archonArena.asset.AnimatedModelLibrary;
 import raptor.game.archonArena.asset.SpriteLibrary;
 import raptor.game.archonArena.asset.io.AnimatedModelLibraryReader;
 import raptor.game.archonArena.asset.io.SpriteLibraryReader;
+import raptor.game.archonArena.map.ArchonArenaLevel;
 import raptor.game.archonArena.menu.MainMenu;
 import raptor.game.archonArena.ui.ArchonArenaUserInterface;
 
 public class ArchonArena extends Game {
+	public static final int MAX_TEAM_COUNT = 8;
+
 	private static final String MODEL_DIRECTORY_SUBPATH = "/art/model/";
 	private static final String SPRITE_LIBRARY_SUBPATH = "/art/sprite/ArchonArena.sl";
 
@@ -49,5 +52,9 @@ public class ArchonArena extends Game {
 
 	public static Player getPlayer() {
 		return player;
+	}
+
+	public static ArchonArenaLevel getCurrentArchonArenaLevel() {
+		return (ArchonArenaLevel)Game.getCurrentLevel();
 	}
 }

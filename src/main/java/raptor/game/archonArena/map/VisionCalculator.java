@@ -7,6 +7,7 @@ import java.util.Set;
 
 import raptor.engine.game.Game;
 import raptor.engine.game.entity.IEntity;
+import raptor.engine.util.geometry.LineSegment;
 import raptor.game.archonArena.unit.Unit;
 
 public class VisionCalculator {
@@ -19,13 +20,10 @@ public class VisionCalculator {
 			visibleToTeam.put(i, new HashSet<>());
 	}
 
-	// Calculate if a specific team has vision of a unit
 	public void calculateVision() {
 		for (final Set<Long> entitySet : visibleToTeam.values())
 			entitySet.clear();
 
-		// Go through each unit
-		//  Mark the unit as visible to its own team
 		for (final IEntity entity : Game.getCurrentLevel().getAllEntities()) {
 			if (!(entity instanceof Unit))
 				continue;
@@ -37,8 +35,29 @@ public class VisionCalculator {
 			for (final IEntity compare : Game.getCurrentLevel().getAllEntities()) {
 				if (entity.getId() == compare.getId())
 					continue;
+				if (!(compare instanceof Unit))
+					continue;
 
-				// Check if in vision range and is not blocked by terrain
+				final Unit compareUnit = (Unit)compare;
+
+				if (unit.getTeam() == compareUnit.getTeam())
+					continue;
+
+				final LineSegment visionLine = new LineSegment(unit.getPosition(), compareUnit.getPosition());
+
+				if (visionLine.getLength() > unit.getStatBlock().getVisionRange())
+					continue;
+
+				boolean hasVision = true;
+				for (final LineSegment wall : Game.getCurrentLevel().getNavigator(Navigators.GROUND.getId()).getWalls()) {
+					if (visionLine.intersectsWith(wall)) {
+						hasVision = false;
+						break;
+					}
+				}
+
+				if (hasVision)
+					visibleToTeam.get(unit.getTeam()).add(compareUnit.getId());
 			}
 		}
 	}

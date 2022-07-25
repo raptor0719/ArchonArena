@@ -14,6 +14,7 @@ import raptor.engine.util.geometry.DoubleVector;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
+import raptor.game.archonArena.main.ArchonArena;
 import raptor.game.archonArena.unit.order.IOrder;
 import raptor.game.archonArena.unit.order.MoveOrder;
 import raptor.game.archonArena.unit.stats.StatBlock;
@@ -119,8 +120,9 @@ public class Unit extends AnimatedEntity {
 	}
 
 	@Override
-	protected void _draw(final IGraphics graphics) {
-//		graphics.drawRectangle(getX(), getY(), definition.getWidth(), definition.getHeight(), false, new BasicColor(0, 255, 0, 100));
+	public void draw(final IGraphics graphics) {
+		if (ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), this.getId()))
+			super.draw(graphics);
 	}
 
 	public UnitState getState() {
@@ -151,6 +153,10 @@ public class Unit extends AnimatedEntity {
 
 	public int getTeam() {
 		return teamId;
+	}
+
+	public StatBlock getStatBlock() {
+		return statBlock;
 	}
 
 	public UnitDefinition getDefinition() {
