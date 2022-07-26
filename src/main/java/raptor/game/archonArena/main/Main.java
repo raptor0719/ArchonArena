@@ -20,8 +20,6 @@ import raptor.engine.ui.input.JavaAwtInputManager;
 
 public class Main {
 	public static void main(final String[] args) throws AWTException, InterruptedException {
-		System.setProperty("sun.java2d.opengl", "true");
-
 		final GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		final GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
 		final GraphicsDevice usedGraphicsDevice = graphicsDevices[1];
