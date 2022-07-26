@@ -13,6 +13,7 @@ public class AnimatedModel extends Model {
 	private final AnimationDefinition defaultAnimation;
 
 	private Animation currentAnimation;
+	private double currentTickAccumulator;
 	private int currentFrameIndex;
 	private int currentHold;
 	private boolean deliveredActivationFrame;
@@ -33,6 +34,7 @@ public class AnimatedModel extends Model {
 		this.defaultAnimation = defaultAnimation;
 
 		this.currentAnimation = getDefaultAnimation();
+		this.currentTickAccumulator = 0.0;
 		this.deliveredActivationFrame = false;
 		this.currentFrameIndex = 0;
 		this.currentHold = 0;
@@ -41,25 +43,36 @@ public class AnimatedModel extends Model {
 		setFrame();
 	}
 
-	public void advanceFrame() {
-		currentHold++;
+	public void advanceFrame(final double tickCount) {
+		currentTickAccumulator += tickCount;
 
-		if (currentHold < currentAnimation.getHolds(currentFrameIndex))
+		final double ticksPerFrame = currentAnimation.getTicksPerFrame();
+		if (currentTickAccumulator < ticksPerFrame)
 			return;
 
-		currentFrameIndex++;
-		deliveredActivationFrame = false;
-		currentHold = 0;
+		final int framesToAdvance = (int)(currentTickAccumulator / ticksPerFrame);
+		currentTickAccumulator -= framesToAdvance * ticksPerFrame;
 
-		if (currentFrameIndex < currentAnimation.getLength()) {
+		for (int i = 0; i < framesToAdvance; i++) {
+			currentHold++;
+
+			if (currentHold < currentAnimation.getHolds(currentFrameIndex))
+				return;
+
+			currentFrameIndex++;
+			deliveredActivationFrame = false;
+			currentHold = 0;
+
+			if (currentFrameIndex < currentAnimation.getLength()) {
+				setFrame();
+				return;
+			}
+
+			currentAnimation = (loop) ? currentAnimation : getDefaultAnimation();
+			currentFrameIndex = 0;
+
 			setFrame();
-			return;
 		}
-
-		currentAnimation = (loop) ? currentAnimation : getDefaultAnimation();
-		currentFrameIndex = 0;
-
-		setFrame();
 	}
 
 	public void playAnimation(final String animationName) {

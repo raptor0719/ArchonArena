@@ -70,8 +70,8 @@ public class Unit extends AnimatedEntity {
 	}
 
 	@Override
-	public void update() {
-		super.update();
+	public void update(final double tickCount) {
+		super.update(tickCount);
 
 		if (currentState != newState) {
 			currentState = newState;
@@ -104,7 +104,7 @@ public class Unit extends AnimatedEntity {
 		}
 
 		if (currentOrder instanceof MoveOrder)
-			move(isNewOrder);
+			move(isNewOrder, tickCount);
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class Unit extends AnimatedEntity {
 
 	// INTERNALS
 
-	private void move(final boolean setup) {
+	private void move(final boolean setup, final double tickCount) {
 		newState = UnitState.MOVE;
 		if (setup) {
 			final MoveOrder moveOrder = (MoveOrder)currentOrder;
@@ -174,7 +174,7 @@ public class Unit extends AnimatedEntity {
 			isNewOrder = false;
 		}
 
-		navAgent.move(statBlock.getMoveSpeed());
+		navAgent.move(statBlock.getMoveSpeed() * tickCount);
 
 		super.setX(navAgent.getPositionX());
 		super.setY(navAgent.getPositionY());

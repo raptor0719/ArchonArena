@@ -3,16 +3,16 @@ package raptor.game.archonArena.model;
 public class Animation {
 	private final AnimationDefinition definition;
 	private final int[] holds;
+	private final int totalFrames;
 
-	private int totalFrames;
-	private int current;
+	private double ticksPerFrame;
 
 	public Animation(final AnimationDefinition definition) {
 		this.definition = definition;
 		this.holds = compileHolds(definition);
-
 		this.totalFrames = calculateTotalFrames();
-		this.current = 0;
+
+		this.ticksPerFrame = 1;
 	}
 
 	public String getName() {
@@ -39,15 +39,12 @@ public class Animation {
 		return totalFrames;
 	}
 
-	public void setFrameCount(final int frameCount) {
-		if (frameCount == totalFrames)
-			return;
+	public double getTicksPerFrame() {
+		return ticksPerFrame;
+	}
 
-		final int difference = frameCount - totalFrames;
-		if (difference > 0)
-			increaseFrames(difference);
-		else
-			reduceFrames(Math.abs(difference));
+	public void setTicksPerFrame(final double ticksPerFrame) {
+		this.ticksPerFrame = ticksPerFrame;
 	}
 
 	public AnimationDefinition getDefinition() {
@@ -77,24 +74,6 @@ public class Animation {
 		} else if (!definition.equals(other.definition))
 			return false;
 		return true;
-	}
-
-	private void increaseFrames(final int difference) {
-		for (int i = 0; i < difference; i++) {
-			holds[current] += 1;
-			current = (current + 1) % holds.length;
-		}
-	}
-
-	private void reduceFrames(final int difference) {
-		for (int i = 0; i < difference; i++) {
-			holds[current] -= 1;
-
-			current -= 1;
-
-			if (current < 0)
-				current = holds.length - 1;
-		}
 	}
 
 	private int[] compileHolds(final AnimationDefinition definition) {

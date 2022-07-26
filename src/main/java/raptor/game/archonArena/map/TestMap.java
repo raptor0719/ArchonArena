@@ -7,8 +7,6 @@ import raptor.engine.collision.CollisionPlane;
 import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
-import raptor.engine.display.render.IViewport;
-import raptor.engine.display.render.ViewportToLocationTransformer;
 import raptor.engine.game.Game;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.nav.mesh.NavMeshNavigator;
@@ -34,10 +32,7 @@ public class TestMap extends ArchonArenaLevel {
 	private final UIState gameplayState;
 	private UIButton exitLevelButton;
 
-	private final int viewportMoveFactor;
-	private final int viewportMouseMoveFactor;
-	int viewportMoveX = 0;
-	int viewportMoveY = 0;
+	private final float viewportMoveFactor;
 
 	Unit testUnit;
 
@@ -45,8 +40,7 @@ public class TestMap extends ArchonArenaLevel {
 		super();
 		this.gameplayState = new UIState();
 
-		this.viewportMoveFactor = 10;
-		this.viewportMouseMoveFactor = 10;
+		this.viewportMoveFactor = 5;
 	}
 
 	@Override
@@ -77,49 +71,53 @@ public class TestMap extends ArchonArenaLevel {
 		gameplayState.addActionHandler("VIEWPORT_LEFT_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveX = -1;
+				Game.getRenderer().getViewport().setXVelocity(-1F * viewportMoveFactor);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_LEFT_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveX = 0;
+				if (Game.getRenderer().getViewport().getXVelocity() < 0F)
+					Game.getRenderer().getViewport().setXVelocity(0F);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_RIGHT_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveX = 1;
+				Game.getRenderer().getViewport().setXVelocity(1F * viewportMoveFactor);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_RIGHT_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveX = 0;
+				if (Game.getRenderer().getViewport().getXVelocity() > 0)
+					Game.getRenderer().getViewport().setXVelocity(0);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_UP_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveY = -1;
+				Game.getRenderer().getViewport().setYVelocity(-1F * viewportMoveFactor);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_UP_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveY = 0;
+				if (Game.getRenderer().getViewport().getYVelocity() < 0F)
+					Game.getRenderer().getViewport().setYVelocity(0F);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_DOWN_START", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveY = 1;
+				Game.getRenderer().getViewport().setYVelocity(1F * viewportMoveFactor);
 			}
 		});
 		gameplayState.addActionHandler("VIEWPORT_DOWN_END", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				viewportMoveY = 0;
+				if (Game.getRenderer().getViewport().getYVelocity() > 0F)
+					Game.getRenderer().getViewport().setYVelocity(0F);
 			}
 		});
 		gameplayState.addActionHandler("SELECTION_START", new IActionHandler() {
@@ -175,28 +173,8 @@ public class TestMap extends ArchonArenaLevel {
 	}
 
 	@Override
-	public void update() {
+	public void update(final double tickCount) {
 		this.getVisionCalculator().calculateVision();
-
-		final IViewport viewport = Game.getRenderer().getViewport();
-
-		viewport.setXPosition(viewport.getXPosition() + viewportMoveX*viewportMoveFactor);
-		viewport.setYPosition(viewport.getYPosition() + viewportMoveY*viewportMoveFactor);
-
-		final int mousePositionX = Game.getUserInterface().getMousePositionX();
-		final int mousePositionY = Game.getUserInterface().getMousePositionY();
-
-		if (mousePositionX >= viewport.getWidth())
-			viewport.setXPosition(viewport.getXPosition() + viewportMouseMoveFactor);
-		else if (mousePositionX <= 0)
-			viewport.setXPosition(viewport.getXPosition() - viewportMouseMoveFactor);
-		else if (mousePositionY >= viewport.getHeight())
-			viewport.setYPosition(viewport.getYPosition() + viewportMouseMoveFactor);
-		else if (mousePositionY <= 0)
-			viewport.setYPosition(viewport.getYPosition() - viewportMouseMoveFactor);
-
-		final ViewportToLocationTransformer t = Game.getViewportToLocation();
-		ArchonArena.getArchonArenaUserInterface().getSelectionManager().setSelectionEnd(t.transformX(mousePositionX), t.transformY(mousePositionY));
 	}
 
 	@Override

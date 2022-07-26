@@ -16,7 +16,7 @@ public abstract class AnimatedEntity extends Entity {
 	}
 
 	@Override
-	public void update() {
-		animatedModel.advanceFrame();
+	public void update(final double tickCount) {
+		animatedModel.advanceFrame(tickCount);
 	}
 }
