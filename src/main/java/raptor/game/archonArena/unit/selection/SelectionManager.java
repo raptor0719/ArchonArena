@@ -56,6 +56,10 @@ public class SelectionManager implements IDrawable {
 		return currentSelected.iterator();
 	}
 
+	public boolean unitIsSelected(final Unit unit) {
+		return currentSelected.contains(unit);
+	}
+
 	public void clearSelected() {
 		currentSelected.clear();
 	}
@@ -138,6 +142,11 @@ public class SelectionManager implements IDrawable {
 	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
 		for (final Unit unit : currentSelected)
 			unit.moveOrder(pointX, pointY, queue);
+	}
+
+	public void attackOrder(final Unit target, final boolean queue) {
+		for (final Unit unit : currentSelected)
+			unit.attackOrder(target, queue);
 	}
 
 	public boolean isRender() {

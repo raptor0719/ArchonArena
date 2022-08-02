@@ -2,7 +2,8 @@ package raptor.game.archonArena.unit;
 
 public enum UnitState {
 	WAIT("idle1"),
-	MOVE("walk1");
+	MOVE("walk1"),
+	ATTACK("attack1");
 
 	private final String defaultAnimationName;
 

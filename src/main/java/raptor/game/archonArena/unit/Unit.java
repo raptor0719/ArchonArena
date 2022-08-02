@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import raptor.engine.collision.geometry.CollisionCircle;
+import raptor.engine.display.render.BasicColor;
+import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.game.Game;
 import raptor.engine.nav.agent.DefaultNavAgent;
@@ -15,12 +17,15 @@ import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
 import raptor.game.archonArena.main.ArchonArena;
+import raptor.game.archonArena.unit.basicAttack.BasicAttack;
+import raptor.game.archonArena.unit.order.AttackOrder;
 import raptor.game.archonArena.unit.order.IOrder;
 import raptor.game.archonArena.unit.order.MoveOrder;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class Unit extends AnimatedEntity {
 	private static final DoubleVector NORTH = new DoubleVector(0, -100);
+	private static final IColor HEALTH_BAR_COLOR = new BasicColor(0, 255, 0, 255);
 
 	private final UnitDefinition definition;
 
@@ -28,6 +33,8 @@ public class Unit extends AnimatedEntity {
 	private final Queue<IOrder> orderQueue;
 
 	private final StatBlock statBlock;
+
+	private final BasicAttack basicAttack;
 
 	private UnitState currentState;
 	private UnitState newState;
@@ -53,6 +60,8 @@ public class Unit extends AnimatedEntity {
 		this.orderQueue = new LinkedList<IOrder>();
 
 		this.statBlock = new StatBlock(definition.getBaseStatBlock());
+
+		this.basicAttack = definition.getBasicAttackDefinition().getInstance();
 
 		this.currentState = UnitState.WAIT;
 		this.newState = UnitState.WAIT;
@@ -104,7 +113,10 @@ public class Unit extends AnimatedEntity {
 		}
 
 		if (currentOrder instanceof MoveOrder)
-			move(isNewOrder, tickCount);
+			handleMoveOrder(isNewOrder, tickCount);
+
+		if (currentOrder instanceof AttackOrder)
+			handleAttackOrder(tickCount);
 	}
 
 	@Override
@@ -121,8 +133,24 @@ public class Unit extends AnimatedEntity {
 
 	@Override
 	public void draw(final IGraphics graphics) {
-		if (ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), this.getId()))
+		if (ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), this.getId())) {
 			super.draw(graphics);
+
+			final float healthPercentage = statBlock.getCurrentHealthPercentage();
+			final int totalWidth = definition.getSelectableWidth();
+			final int healthBarWidth = (int)(totalWidth * healthPercentage);
+			final int healthBarHeight = 5;
+
+			graphics.drawRectangle(getX(), getY() - healthBarHeight, healthBarWidth, healthBarHeight, true, HEALTH_BAR_COLOR);
+		}
+	}
+
+	public void damage(final int amount) {
+		statBlock.applyDamage(amount);
+	}
+
+	public boolean isDead() {
+		return statBlock.getCurrentHealth() <= 0;
 	}
 
 	public UnitState getState() {
@@ -142,6 +170,18 @@ public class Unit extends AnimatedEntity {
 
 		orderQueue.clear();
 		currentOrder = moveOrder;
+		isNewOrder = true;
+	}
+
+	public void attackOrder(final Unit target, final boolean queue) {
+		final AttackOrder attackOrder = new AttackOrder(target);
+		if (queue) {
+			orderQueue.add(attackOrder);
+			return;
+		}
+
+		orderQueue.clear();
+		currentOrder = attackOrder;
 		isNewOrder = true;
 	}
 
@@ -165,23 +205,54 @@ public class Unit extends AnimatedEntity {
 
 	// INTERNALS
 
-	private void move(final boolean setup, final double tickCount) {
-		newState = UnitState.MOVE;
+	private void handleMoveOrder(final boolean setup, final double tickCount) {
 		if (setup) {
 			final MoveOrder moveOrder = (MoveOrder)currentOrder;
-			navAgent.setPosition(getX(), getY());
-			navAgent.setDestination(moveOrder.getDestinationX(), moveOrder.getDestinationY());
+			setupMove(moveOrder.getDestinationX(), moveOrder.getDestinationY());
 			isNewOrder = false;
 		}
+
+		move(tickCount);
+
+		if (navAgent.atDestination())
+			finishOrder();
+	}
+
+	private void setupMove(final int destinationX, final int destinationY) {
+		navAgent.setPosition(getX(), getY());
+		navAgent.setDestination(destinationX, destinationY);
+	}
+
+	private void move(final double tickCount) {
+		newState = UnitState.MOVE;
 
 		navAgent.move(statBlock.getMoveSpeed() * tickCount);
 
 		super.setX(navAgent.getPositionX());
 		super.setY(navAgent.getPositionY());
 		setFacingInDegrees(calculateFacingInDegrees(navAgent.getFaceVector()));
+	}
 
-		if (navAgent.atDestination())
+	private void handleAttackOrder(final double tickCount) {
+		final AttackOrder attackOrder = (AttackOrder)currentOrder;
+		final Unit target = attackOrder.getTarget();
+
+		if (!ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), target.getId()) || target.isDead())
 			finishOrder();
+
+		if (Point.distanceTo(getX(), getY(), target.getX(), target.getY()) > basicAttack.getRange()) {
+			setupMove(target.getX(), target.getY());
+			move(tickCount);
+			return;
+		}
+
+		if (currentState != UnitState.ATTACK) {
+			newState = UnitState.ATTACK;
+			return;
+		}
+
+		if (getAnimatedModel().isActivationFrame())
+			basicAttack.executeAttack(this, target);
 	}
 
 	private void finishOrder() {

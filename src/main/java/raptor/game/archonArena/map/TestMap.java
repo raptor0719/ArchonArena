@@ -8,6 +8,7 @@ import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
 import raptor.engine.game.Game;
+import raptor.engine.game.entity.IEntity;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.nav.mesh.NavMeshNavigator;
 import raptor.engine.ui.UIAnchorPoint;
@@ -25,6 +26,8 @@ import raptor.game.archonArena.main.ArchonArena;
 import raptor.game.archonArena.menu.MainMenu;
 import raptor.game.archonArena.unit.Unit;
 import raptor.game.archonArena.unit.UnitDefinition;
+import raptor.game.archonArena.unit.UnitPositionToLowLevelCoordinateTranslator;
+import raptor.game.archonArena.unit.basicAttack.BasicAttackDefinition;
 import raptor.game.archonArena.unit.selection.SelectionManager;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
@@ -135,7 +138,30 @@ public class TestMap extends ArchonArenaLevel {
 		gameplayState.addActionHandler("ORDER_TARGET", new IActionHandler() {
 			@Override
 			public void handleAction(final int gameMouseX, final int gameMouseY) {
-				ArchonArena.getArchonArenaUserInterface().getSelectionManager().moveOrder(gameMouseX, gameMouseY, false);
+				Unit unitUnderCursor = null;
+				for (final IEntity entity : Game.getCurrentLevel().getAllEntities()) {
+					if (!(entity instanceof Unit))
+						continue;
+
+					final Unit unit = (Unit)entity;
+
+					if (!ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), unit.getId()))
+						continue;
+
+					final int xmin = UnitPositionToLowLevelCoordinateTranslator.translatePositionX(unit);
+					final int ymin = UnitPositionToLowLevelCoordinateTranslator.translatePositionY(unit);
+					final int xmax = xmin + unit.getWidth();
+					final int ymax = ymin + unit.getHeight();
+
+					if (gameMouseX >= xmin && gameMouseX <= xmax && gameMouseY >= ymin && gameMouseY <= ymax)
+						if (unitUnderCursor == null || unit.getY() > unitUnderCursor.getY() || !ArchonArena.getArchonArenaUserInterface().getSelectionManager().unitIsSelected(unit))
+							unitUnderCursor = unit;
+				}
+
+				if (unitUnderCursor == null || unitUnderCursor.getTeam() == ArchonArena.getPlayer().getTeamId())
+					ArchonArena.getArchonArenaUserInterface().getSelectionManager().moveOrder(gameMouseX, gameMouseY, false);
+				else if (unitUnderCursor.getTeam() != ArchonArena.getPlayer().getTeamId())
+					ArchonArena.getArchonArenaUserInterface().getSelectionManager().attackOrder(unitUnderCursor, false);
 			}
 		});
 
@@ -144,7 +170,7 @@ public class TestMap extends ArchonArenaLevel {
 
 		Game.getUserInterface().setState(gameplayState);
 
-		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, new StatBlock(3, 100));
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, new StatBlock(3, 300, 300, 5), new BasicAttackDefinition(80, 5, 1));
 		testUnit = new Unit(testUnitDefinition, navigator, new Point(200, 200), 0);
 		this.addEntity(testUnit);
 
@@ -175,6 +201,18 @@ public class TestMap extends ArchonArenaLevel {
 	@Override
 	public void update(final double tickCount) {
 		this.getVisionCalculator().calculateVision();
+
+		for (final IEntity entity : Game.getCurrentLevel().getAllEntities()) {
+			if (!(entity instanceof Unit))
+				return;
+
+			final Unit unit = (Unit)entity;
+
+			if (unit.isDead()) {
+				this.getCollisionPlane(Navigators.GROUND.getId()).unregisterEntity(entity);
+				this.removeEntity(entity.getId());
+			}
+		}
 	}
 
 	@Override
