@@ -97,7 +97,7 @@ public class AnimatedModelLibraryReader {
 
 		for (final Map.Entry<String, raptor.modelMaker.model.Frame.SavedHardpointPosition> savedPosition : frame.getSavedPositions().entrySet()) {
 			final raptor.modelMaker.model.Frame.SavedHardpointPosition position = savedPosition.getValue();
-			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier + (width/2) + centerOffsetX, position.getY() + centerOffsetY, position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
+			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier + (width/2) + centerOffsetX, position.getY() - centerOffsetY, position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
 		}
 
 		return new WireModelFrame(hardpoints.toArray(new Hardpoint[hardpoints.size()]));
