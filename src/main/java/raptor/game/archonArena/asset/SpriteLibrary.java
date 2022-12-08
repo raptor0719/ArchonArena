@@ -1,28 +1,17 @@
 package raptor.game.archonArena.asset;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import raptor.engine.model.SpriteCollection;
+import raptor.engine.model.Sprite;
 
 public class SpriteLibrary {
-	private final Map<String, SpriteCollection> sprites;
+	private final Map<String, Sprite> sprites;
 
-	public SpriteLibrary(final List<SpriteCollection> sprites) {
-		this.sprites = buildMap(sprites);
+	public SpriteLibrary(final Map<String, Sprite> sprites) {
+		this.sprites = sprites;
 	}
 
-	public SpriteCollection getSprite(final String name) {
+	public Sprite getSprite(final String name) {
 		return sprites.get(name);
-	}
-
-	private Map<String, SpriteCollection> buildMap(final List<SpriteCollection> sprites) {
-		final Map<String, SpriteCollection> spriteMap = new HashMap<>();
-
-		for (final SpriteCollection s : sprites)
-			spriteMap.put(s.getName(), s);
-
-		return spriteMap;
 	}
 }

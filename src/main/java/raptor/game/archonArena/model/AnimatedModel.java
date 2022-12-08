@@ -1,114 +1,49 @@
 package raptor.game.archonArena.model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import raptor.engine.model.Model;
-import raptor.engine.model.SpriteModel;
-import raptor.engine.model.WireModel;
+import raptor.engine.model.Sprite;
+import raptor.engine.util.geometry.DoubleVector;
+import raptor.engine.util.geometry.OffsetPoint;
+import raptor.engine.util.geometry.api.IPoint;
 
 public class AnimatedModel extends Model {
-	private final Map<String, Animation> animations;
-	private final AnimationDefinition defaultAnimation;
+	private static final double BUMP_OFFSET_FRACTION = 0.25;
 
-	private Animation currentAnimation;
-	private double currentTickAccumulator;
-	private int currentFrameIndex;
-	private int currentHold;
-	private boolean deliveredActivationFrame;
-	private boolean loop;
+	private final int width;
+	private final int height;
 
-	public AnimatedModel(final WireModel wireModel, final SpriteModel spriteModel, final List<AnimationDefinition> animations, final AnimationDefinition defaultAnimation) {
-		super(wireModel, spriteModel);
+	private OffsetPoint bumpOffsetPoint;
 
-		if (!animations.contains(defaultAnimation))
-			throw new IllegalArgumentException("The default animation must exist in the provided animations.");
+	public AnimatedModel(final Sprite sprite, final int width, final int height) {
+		super(sprite);
 
-		this.animations = new HashMap<>();
-		for (final AnimationDefinition definition : animations) {
-			final Animation instance = definition.getInstance();
-			this.animations.put(instance.getName(), instance);
-		}
+		this.width = width;
+		this.height = height;
 
-		this.defaultAnimation = defaultAnimation;
-
-		this.currentAnimation = getDefaultAnimation();
-		this.currentTickAccumulator = 0.0;
-		this.deliveredActivationFrame = false;
-		this.currentFrameIndex = 0;
-		this.currentHold = 0;
-		this.loop = false;
-
-		setFrame();
+		this.bumpOffsetPoint = null;
 	}
 
-	public void advanceFrame(final double tickCount) {
-		currentTickAccumulator += tickCount;
+	@Override
+	public void setPosition(final IPoint reference) {
+		this.bumpOffsetPoint = new OffsetPoint(reference);
 
-		final double ticksPerFrame = currentAnimation.getTicksPerFrame();
-		if (currentTickAccumulator < ticksPerFrame)
-			return;
-
-		final int framesToAdvance = (int)(currentTickAccumulator / ticksPerFrame);
-		currentTickAccumulator -= framesToAdvance * ticksPerFrame;
-
-		for (int i = 0; i < framesToAdvance; i++) {
-			currentHold++;
-
-			if (currentHold < currentAnimation.getHolds(currentFrameIndex))
-				return;
-
-			currentFrameIndex++;
-			deliveredActivationFrame = false;
-			currentHold = 0;
-
-			if (currentFrameIndex < currentAnimation.getLength()) {
-				setFrame();
-				return;
-			}
-
-			currentAnimation = (loop) ? currentAnimation : getDefaultAnimation();
-			currentFrameIndex = 0;
-
-			setFrame();
-		}
+		super.setPosition(bumpOffsetPoint);
 	}
 
-	public void playAnimation(final String animationName) {
-		play(animationName, false);
+	public void bumpTowardPoint(final int x, final int y) {
+		final IPoint origin = bumpOffsetPoint.getOrigin();
+
+		final DoubleVector v = DoubleVector.unitVectorTowardPoint(origin.getX(), origin.getY(), x, y);
+
+		final double xScaled = width * BUMP_OFFSET_FRACTION * v.getX();
+		final double yScaled = height * BUMP_OFFSET_FRACTION * v.getY();
+
+		bumpOffsetPoint.setOffsetX((int)xScaled);
+		bumpOffsetPoint.setOffsetY((int)yScaled);
 	}
 
-	public void loopAnimation(final String animationName) {
-		play(animationName, true);
-	}
-
-	public boolean isActivationFrame() {
-		final boolean isActivation = currentAnimation.getActivation(currentFrameIndex) && !deliveredActivationFrame;
-		deliveredActivationFrame = true;
-		return isActivation;
-	}
-
-	private void setFrame() {
-		super.setFrame(currentAnimation.getFrame(currentFrameIndex));
-	}
-
-	private void play(final String animationName, final boolean loopAnimation) {
-		final Animation toPlay = animations.get(animationName);
-
-		if (toPlay == null)
-			return;
-
-		currentAnimation = toPlay;
-		deliveredActivationFrame = false;
-		currentFrameIndex = 0;
-		currentHold = 0;
-		loop = loopAnimation;
-
-		setFrame();
-	}
-
-	private Animation getDefaultAnimation() {
-		return animations.get(defaultAnimation.getName());
+	public void stopBump() {
+		bumpOffsetPoint.setOffsetX(0);
+		bumpOffsetPoint.setOffsetY(0);
 	}
 }

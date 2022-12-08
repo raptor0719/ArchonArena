@@ -170,7 +170,7 @@ public class TestMap extends ArchonArenaLevel {
 
 		Game.getUserInterface().setState(gameplayState);
 
-		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 20, new StatBlock(3, 300, 300, 5), new BasicAttackDefinition(80, 5, 1));
+		final UnitDefinition testUnitDefinition = new UnitDefinition("test unit", ArchonArena.getModelLibrary().getDefinition("Torin"), 10, new StatBlock(3, 300, 300, 5, 60), new BasicAttackDefinition(40, 5, 1));
 		testUnit = new Unit(testUnitDefinition, navigator, new Point(200, 200), 0);
 		this.addEntity(testUnit);
 

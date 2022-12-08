@@ -12,7 +12,6 @@ import raptor.engine.nav.agent.DefaultNavAgent;
 import raptor.engine.nav.api.INavAgent;
 import raptor.engine.nav.api.INavigator;
 import raptor.engine.util.geometry.Circle;
-import raptor.engine.util.geometry.DoubleVector;
 import raptor.engine.util.geometry.Point;
 import raptor.engine.util.geometry.api.IPoint;
 import raptor.game.archonArena.entity.AnimatedEntity;
@@ -24,7 +23,7 @@ import raptor.game.archonArena.unit.order.MoveOrder;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class Unit extends AnimatedEntity {
-	private static final DoubleVector NORTH = new DoubleVector(0, -100);
+	private static final int MAX_BUMP_TICK_COUNT = 5;
 	private static final IColor HEALTH_BAR_COLOR = new BasicColor(0, 255, 0, 255);
 
 	private final UnitDefinition definition;
@@ -37,12 +36,17 @@ public class Unit extends AnimatedEntity {
 	private final BasicAttack basicAttack;
 
 	private UnitState currentState;
-	private UnitState newState;
 
 	private IOrder currentOrder;
 	private boolean isNewOrder;
 
 	private int teamId;
+
+	private int basicAttackCooldown;
+
+	// Bump Control
+	private int bumpTickCount;
+	private int currentBumpLength;
 
 	// Stuck detection
 	private static final int STUCK_MAX_COUNTER = 34;
@@ -64,7 +68,6 @@ public class Unit extends AnimatedEntity {
 		this.basicAttack = definition.getBasicAttackDefinition().getInstance();
 
 		this.currentState = UnitState.WAIT;
-		this.newState = UnitState.WAIT;
 
 		this.currentOrder = null;
 
@@ -74,18 +77,18 @@ public class Unit extends AnimatedEntity {
 
 		this.teamId = teamId;
 
+		this.basicAttackCooldown = 0;
+
+		this.bumpTickCount = Math.min(MAX_BUMP_TICK_COUNT, statBlock.getAttackSpeed());
+		this.currentBumpLength = 0;
+
 		this.stuckPosition = new Point(this.getPosition().getX(), this.getPosition().getY());
 		this.stuckCounter = 0;
 	}
 
 	@Override
 	public void update(final double tickCount) {
-		super.update(tickCount);
-
-		if (currentState != newState) {
-			currentState = newState;
-			getAnimatedModel().loopAnimation(currentState.getDefaultAnimationName());
-		}
+		basicAttackCooldown -= tickCount;
 
 		if (currentState == UnitState.MOVE) {
 			if (this.getPosition().equals(stuckPosition)) {
@@ -103,7 +106,7 @@ public class Unit extends AnimatedEntity {
 		}
 
 		if (currentOrder == null && orderQueue.isEmpty()) {
-			newState = UnitState.WAIT;
+			currentState = UnitState.WAIT;
 			return;
 		}
 
@@ -158,7 +161,7 @@ public class Unit extends AnimatedEntity {
 	}
 
 	public void setState(final UnitState newState) {
-		this.newState = newState;
+		this.currentState = newState;
 	}
 
 	public void moveOrder(final int pointX, final int pointY, final boolean queue) {
@@ -188,7 +191,7 @@ public class Unit extends AnimatedEntity {
 	public void stopOrder() {
 		orderQueue.clear();
 		currentOrder = null;
-		newState = UnitState.WAIT;
+		currentState = UnitState.WAIT;
 	}
 
 	public int getTeam() {
@@ -224,7 +227,7 @@ public class Unit extends AnimatedEntity {
 	}
 
 	private void move(final double tickCount) {
-		newState = UnitState.MOVE;
+		currentState = UnitState.MOVE;
 
 		navAgent.move(statBlock.getMoveSpeed() * tickCount);
 
@@ -245,20 +248,26 @@ public class Unit extends AnimatedEntity {
 			return;
 		}
 
-		if (currentState != UnitState.ATTACK) {
-			newState = UnitState.ATTACK;
-			return;
+		currentState = UnitState.ATTACK;
+
+		currentBumpLength += tickCount;
+
+		if (currentBumpLength >= bumpTickCount) {
+			getAnimatedModel().stopBump();
+			currentBumpLength = 0;
 		}
 
-		if (getAnimatedModel().isActivationFrame())
+		if (basicAttackCooldown > 0)
+			return;
+
+		if (currentBumpLength == 0) {
+			getAnimatedModel().bumpTowardPoint(target.getX(), target.getY());
+			basicAttackCooldown = statBlock.getAttackSpeed();
 			basicAttack.executeAttack(this, target);
+		}
 	}
 
 	private void finishOrder() {
 		currentOrder = null;
-	}
-
-	private int calculateFacingInDegrees(final DoubleVector facingVector) {
-		return (int) (Math.toDegrees(facingVector.getAngleBetween(NORTH)) * ((facingVector.getX() < 0) ? -1 : 1));
 	}
 }
