@@ -230,7 +230,6 @@ public class Unit extends AnimatedEntity {
 
 		super.setX(navAgent.getPositionX());
 		super.setY(navAgent.getPositionY());
-		setFacingInDegrees(calculateFacingInDegrees(navAgent.getFaceVector()));
 	}
 
 	private void handleAttackOrder(final double tickCount) {
