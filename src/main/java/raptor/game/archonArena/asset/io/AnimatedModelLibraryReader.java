@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import raptor.engine.model.Direction;
-import raptor.engine.model.DirectionalWireModelFrame;
 import raptor.engine.model.Hardpoint;
 import raptor.engine.model.SpriteCollection;
 import raptor.engine.model.SpriteModel;
@@ -73,34 +71,23 @@ public class AnimatedModelLibraryReader {
 	}
 
 	private static WireModel buildWireModel(final raptor.modelMaker.model.Model model) {
-		final List<DirectionalWireModelFrame> frames = new ArrayList<>();
+		final List<WireModelFrame> frames = new ArrayList<>();
 
 		for (final raptor.modelMaker.model.Frame frame : model.getFrames())
-			frames.add(buildDirectionalWireModelFrame(frame, model.getWidth(), model.getCenterOffsetX(), model.getCenterOffsetY()));
+			frames.add(buildWireModelFrame(frame, model.getWidth(), model.getCenterOffsetX(), model.getCenterOffsetY()));
 
 		return new WireModel(model.getName(), frames);
 	}
 
-	private static DirectionalWireModelFrame buildDirectionalWireModelFrame(final raptor.modelMaker.model.Frame frame, final int width, final int centerOffsetX, final int centerOffsetY) {
-		final Map<Direction, WireModelFrame> framesMap = new HashMap<>();
-
-		framesMap.put(Direction.LEFT, buildWireModelFrame(frame, width, centerOffsetX, centerOffsetY, true));
-		framesMap.put(Direction.RIGHT, buildWireModelFrame(frame, width, centerOffsetX, centerOffsetY, false));
-
-		return new DirectionalWireModelFrame(frame.getName(), framesMap);
-	}
-
-	private static WireModelFrame buildWireModelFrame(final raptor.modelMaker.model.Frame frame, final int width, final int centerOffsetX, final int centerOffsetY, final boolean isLeft) {
+	private static WireModelFrame buildWireModelFrame(final raptor.modelMaker.model.Frame frame, final int width, final int centerOffsetX, final int centerOffsetY) {
 		final List<Hardpoint> hardpoints = new ArrayList<>();
-
-		final int directionModifier = (isLeft) ? -1 : 1;
 
 		for (final Map.Entry<String, raptor.modelMaker.model.Frame.SavedHardpointPosition> savedPosition : frame.getSavedPositions().entrySet()) {
 			final raptor.modelMaker.model.Frame.SavedHardpointPosition position = savedPosition.getValue();
-			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() * directionModifier + (width/2) + centerOffsetX, position.getY() - centerOffsetY, position.getRot() * directionModifier, position.getDepth(), position.getSpritePhase()));
+			hardpoints.add(new Hardpoint(savedPosition.getKey(), position.getX() + (width/2) + centerOffsetX, position.getY() - centerOffsetY, position.getRot(), position.getDepth(), position.getSpritePhase()));
 		}
 
-		return new WireModelFrame(hardpoints.toArray(new Hardpoint[hardpoints.size()]));
+		return new WireModelFrame(frame.getName(), hardpoints.toArray(new Hardpoint[hardpoints.size()]));
 	}
 
 	private static SpriteModel buildSpriteModel(final raptor.modelMaker.model.Model source, final WireModel wireModel, final SpriteLibrary spriteLibrary) {
