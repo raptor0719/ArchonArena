@@ -23,8 +23,6 @@ public class SelectionManager implements IDrawable {
 	private static final IColor SELECTION_BOX_COLOR = new BasicColor(0, 255, 0, 255);
 	private static final int SELECTION_BOX_LINE_THICKNESS = 1;
 
-	private static final IColor SELECTED_UNIT_BOX_COLOR = new BasicColor(0, 255, 0, 150);
-
 	private final Set<Unit> currentSelected;
 
 	private final Point start;
@@ -161,19 +159,6 @@ public class SelectionManager implements IDrawable {
 	public void draw(final IGraphics graphics) {
 		if (!render)
 			return;
-
-		for (final Unit unit : currentSelected) {
-			final int x = UnitPositionToLowLevelCoordinateTranslator.translatePositionX(unit);
-			final int y = UnitPositionToLowLevelCoordinateTranslator.translatePositionY(unit);
-
-			final int width = unit.getDefinition().getModelDefintion().getWidth();
-			final int height = unit.getDefinition().getModelDefintion().getHeight();
-
-			graphics.drawLine(x, y, x + width, y, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
-			graphics.drawLine(x, y, x, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
-			graphics.drawLine(x + width, y, x + width, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
-			graphics.drawLine(x, y + height, x + width, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
-		}
 
 		if (!selectionActive)
 			return;

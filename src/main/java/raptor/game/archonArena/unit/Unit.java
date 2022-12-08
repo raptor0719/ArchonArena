@@ -134,6 +134,9 @@ public class Unit extends AnimatedEntity {
 		navAgent.setPosition(getX(), y);
 	}
 
+	private static final int SELECTION_BOX_LINE_THICKNESS = 1;
+	private static final IColor SELECTED_UNIT_BOX_COLOR = new BasicColor(0, 255, 0, 150);
+
 	@Override
 	public void draw(final IGraphics graphics) {
 		if (ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), this.getId())) {
@@ -145,6 +148,18 @@ public class Unit extends AnimatedEntity {
 			final int healthBarHeight = 5;
 
 			graphics.drawRectangle(getX(), getY() - healthBarHeight, healthBarWidth, healthBarHeight, true, HEALTH_BAR_COLOR);
+
+			if (ArchonArena.getArchonArenaUserInterface().getSelectionManager().unitIsSelected(this)) {
+				final int x = getX();
+				final int y = getY();
+				final int width = getWidth();
+				final int height = getHeight();
+
+				graphics.drawLine(x, y, x + width, y, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
+				graphics.drawLine(x, y, x, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
+				graphics.drawLine(x + width, y, x + width, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
+				graphics.drawLine(x, y + height, x + width, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
+			}
 		}
 	}
 
