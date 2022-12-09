@@ -56,7 +56,7 @@ public class MainMenu extends Level {
 	}
 
 	@Override
-	public void update(final double tickCount) {
+	public void update(final long millisSinceLastFrame) {
 
 	}
 

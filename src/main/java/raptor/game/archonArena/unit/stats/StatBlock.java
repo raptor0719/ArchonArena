@@ -1,6 +1,7 @@
 package raptor.game.archonArena.unit.stats;
 
 public class StatBlock {
+	// Measured in units per second
 	private int moveSpeed;
 	private int visionRange;
 
@@ -9,8 +10,8 @@ public class StatBlock {
 
 	private int physicalPower;
 
-	// Measured in ticks between attacks
-	private int attackSpeed;
+	// Measured in attacks per second
+	private double attackSpeed;
 
 	public StatBlock(final StatBlock copyOf) {
 		this.moveSpeed = copyOf.getMoveSpeed();
@@ -21,7 +22,7 @@ public class StatBlock {
 		this.attackSpeed = copyOf.getAttackSpeed();
 	}
 
-	public StatBlock(final int moveSpeed, final int visionRange, final int maxHealth, final int physicalPower, final int attackSpeed) {
+	public StatBlock(final int moveSpeed, final int visionRange, final int maxHealth, final int physicalPower, final double attackSpeed) {
 		this.moveSpeed = moveSpeed;
 		this.visionRange = visionRange;
 		this.currentHealth = maxHealth;
@@ -62,7 +63,7 @@ public class StatBlock {
 		return physicalPower;
 	}
 
-	public int getAttackSpeed() {
+	public double getAttackSpeed() {
 		return attackSpeed;
 	}
 }

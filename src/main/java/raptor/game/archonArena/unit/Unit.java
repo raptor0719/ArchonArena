@@ -23,7 +23,7 @@ import raptor.game.archonArena.unit.order.MoveOrder;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class Unit extends AnimatedEntity {
-	private static final int MAX_BUMP_TICK_COUNT = 5;
+	private static final int MAX_BUMP_TIME_IN_MS = 85;
 	private static final IColor HEALTH_BAR_COLOR = new BasicColor(0, 255, 0, 255);
 
 	private final UnitDefinition definition;
@@ -45,11 +45,11 @@ public class Unit extends AnimatedEntity {
 	private int basicAttackCooldown;
 
 	// Bump Control
-	private int bumpTickCount;
+	private int bumpTime;
 	private int currentBumpLength;
 
 	// Stuck detection
-	private static final int STUCK_MAX_COUNTER = 34;
+	private static final int STUCK_MAX_MS = 600;
 	private Point stuckPosition;
 	private int stuckCounter;
 
@@ -79,7 +79,7 @@ public class Unit extends AnimatedEntity {
 
 		this.basicAttackCooldown = 0;
 
-		this.bumpTickCount = Math.min(MAX_BUMP_TICK_COUNT, statBlock.getAttackSpeed());
+		this.bumpTime = Math.min(MAX_BUMP_TIME_IN_MS, calculateMillisBetweenAttacks(statBlock.getAttackSpeed()));
 		this.currentBumpLength = 0;
 
 		this.stuckPosition = new Point(this.getPosition().getX(), this.getPosition().getY());
@@ -87,19 +87,19 @@ public class Unit extends AnimatedEntity {
 	}
 
 	@Override
-	public void update(final double tickCount) {
-		basicAttackCooldown -= tickCount;
+	public void update(final long millisSinceLastFrame) {
+		basicAttackCooldown -= millisSinceLastFrame;
 
 		if (currentState == UnitState.MOVE) {
 			if (this.getPosition().equals(stuckPosition)) {
-				stuckCounter++;
+				stuckCounter += millisSinceLastFrame;
 			} else {
 				stuckPosition.setX(this.getPosition().getX());
 				stuckPosition.setY(this.getPosition().getY());
 				stuckCounter = 0;
 			}
 
-			if (stuckCounter >= STUCK_MAX_COUNTER) {
+			if (stuckCounter >= STUCK_MAX_MS) {
 				stopOrder();
 				stuckCounter = 0;
 			}
@@ -116,10 +116,10 @@ public class Unit extends AnimatedEntity {
 		}
 
 		if (currentOrder instanceof MoveOrder)
-			handleMoveOrder(isNewOrder, tickCount);
+			handleMoveOrder(isNewOrder, millisSinceLastFrame);
 
 		if (currentOrder instanceof AttackOrder)
-			handleAttackOrder(tickCount);
+			handleAttackOrder(millisSinceLastFrame);
 	}
 
 	@Override
@@ -223,14 +223,14 @@ public class Unit extends AnimatedEntity {
 
 	// INTERNALS
 
-	private void handleMoveOrder(final boolean setup, final double tickCount) {
+	private void handleMoveOrder(final boolean setup, final long millisSinceLastFrame) {
 		if (setup) {
 			final MoveOrder moveOrder = (MoveOrder)currentOrder;
 			setupMove(moveOrder.getDestinationX(), moveOrder.getDestinationY());
 			isNewOrder = false;
 		}
 
-		move(tickCount);
+		move(millisSinceLastFrame);
 
 		if (navAgent.atDestination())
 			finishOrder();
@@ -241,16 +241,20 @@ public class Unit extends AnimatedEntity {
 		navAgent.setDestination(destinationX, destinationY);
 	}
 
-	private void move(final double tickCount) {
+	private void move(final long millisSinceLastFrame) {
 		currentState = UnitState.MOVE;
 
-		navAgent.move(statBlock.getMoveSpeed() * tickCount);
+		navAgent.move(calculateMoveAmount(statBlock.getMoveSpeed(), millisSinceLastFrame));
 
 		super.setX(navAgent.getPositionX());
 		super.setY(navAgent.getPositionY());
 	}
 
-	private void handleAttackOrder(final double tickCount) {
+	private double calculateMoveAmount(final int unitsPerSecond, final long millisSinceLastFrame) {
+		return ((double)unitsPerSecond) * ((double)millisSinceLastFrame)/1000.0;
+	}
+
+	private void handleAttackOrder(final long millisSinceLastFrame) {
 		final AttackOrder attackOrder = (AttackOrder)currentOrder;
 		final Unit target = attackOrder.getTarget();
 
@@ -259,15 +263,15 @@ public class Unit extends AnimatedEntity {
 
 		if (Point.distanceTo(getX(), getY(), target.getX(), target.getY()) > basicAttack.getRange()) {
 			setupMove(target.getX(), target.getY());
-			move(tickCount);
+			move(millisSinceLastFrame);
 			return;
 		}
 
 		currentState = UnitState.ATTACK;
 
-		currentBumpLength += tickCount;
+		currentBumpLength += millisSinceLastFrame;
 
-		if (currentBumpLength >= bumpTickCount) {
+		if (currentBumpLength >= bumpTime) {
 			getAnimatedModel().stopBump();
 			currentBumpLength = 0;
 		}
@@ -277,9 +281,13 @@ public class Unit extends AnimatedEntity {
 
 		if (currentBumpLength == 0) {
 			getAnimatedModel().bumpTowardPoint(target.getX(), target.getY());
-			basicAttackCooldown = statBlock.getAttackSpeed();
+			basicAttackCooldown = calculateMillisBetweenAttacks(statBlock.getAttackSpeed());
 			basicAttack.executeAttack(this, target);
 		}
+	}
+
+	private int calculateMillisBetweenAttacks(final double attackSpeed) {
+		return (int)(1000/attackSpeed);
 	}
 
 	private void finishOrder() {
