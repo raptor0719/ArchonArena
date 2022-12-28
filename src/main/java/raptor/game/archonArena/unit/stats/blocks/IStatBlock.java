@@ -5,7 +5,7 @@ import raptor.game.archonArena.unit.stats.AbilityResourceStat;
 import raptor.game.archonArena.unit.stats.Stat;
 
 public interface IStatBlock {
-	Object statValue(Stat stat);
+	Number statValue(Stat stat);
 	boolean usesResource(AbilityResource resource);
-	Object resourceStatValue(AbilityResource resource, AbilityResourceStat stat);
+	Number resourceStatValue(AbilityResource resource, AbilityResourceStat stat);
 }

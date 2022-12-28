@@ -8,10 +8,10 @@ import raptor.game.archonArena.unit.stats.AbilityResourceStat;
 import raptor.game.archonArena.unit.stats.Stat;
 
 public class StaticStatBlock implements IStatBlock {
-	private final Map<Stat, Object> values;
-	private final Map<AbilityResource, Map<AbilityResourceStat, Object>> resourceValues;
+	private final Map<Stat, Number> values;
+	private final Map<AbilityResource, Map<AbilityResourceStat, Number>> resourceValues;
 
-	public StaticStatBlock(final Map<Stat, Object> values, final Map<AbilityResource, Map<AbilityResourceStat, Object>> resourceValues) {
+	public StaticStatBlock(final Map<Stat, Number> values, final Map<AbilityResource, Map<AbilityResourceStat, Number>> resourceValues) {
 		this.values = values;
 		this.resourceValues = resourceValues;
 	}
@@ -21,7 +21,7 @@ public class StaticStatBlock implements IStatBlock {
 	}
 
 	@Override
-	public Object statValue(final Stat stat) {
+	public Number statValue(final Stat stat) {
 		return values.get(stat);
 	}
 
@@ -31,7 +31,7 @@ public class StaticStatBlock implements IStatBlock {
 	}
 
 	@Override
-	public Object resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
+	public Number resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
 		return resourceValues.get(resource).get(stat);
 	}
 }

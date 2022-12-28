@@ -9,18 +9,18 @@ import raptor.game.archonArena.unit.stats.values.Leveled;
 import raptor.game.archonArena.unit.stats.values.LeveledStatValue;
 
 public class LeveledStatBlock implements IStatBlock, Leveled {
-	private final Map<Stat, LeveledStatValue<?>> values;
-	private final Map<AbilityResource, Map<AbilityResourceStat, LeveledStatValue<?>>> resourceValues;
+	private final Map<Stat, LeveledStatValue> values;
+	private final Map<AbilityResource, Map<AbilityResourceStat, LeveledStatValue>> resourceValues;
 
 	private int level;
 
-	public LeveledStatBlock(final Map<Stat, LeveledStatValue<?>> values, final Map<AbilityResource, Map<AbilityResourceStat, LeveledStatValue<?>>> resourceValues) {
+	public LeveledStatBlock(final Map<Stat, LeveledStatValue> values, final Map<AbilityResource, Map<AbilityResourceStat, LeveledStatValue>> resourceValues) {
 		this.values = values;
 		this.resourceValues = resourceValues;
 	}
 
 	@Override
-	public Object statValue(final Stat stat) {
+	public Number statValue(final Stat stat) {
 		return values.get(stat).calculate();
 	}
 
@@ -30,7 +30,7 @@ public class LeveledStatBlock implements IStatBlock, Leveled {
 	}
 
 	@Override
-	public Object resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
+	public Number resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
 		return resourceValues.get(resource).get(stat).calculate();
 	}
 

@@ -32,7 +32,7 @@ public class CompositeStatBlock implements IStatBlock {
 		}
 	}
 
-	public void addModifier(final Stat stat, final String modifierName, final StatValue<?> value) {
+	public void addModifier(final Stat stat, final String modifierName, final StatValue value) {
 		modifiers.get(stat).addStatSource(modifierName, value);
 	}
 
@@ -40,7 +40,7 @@ public class CompositeStatBlock implements IStatBlock {
 		modifiers.get(stat).removeStatSource(modifierName);
 	}
 
-	public void addResourceModifier(final AbilityResource resource, final AbilityResourceStat stat, final String modifierName, final StatValue<?> value) {
+	public void addResourceModifier(final AbilityResource resource, final AbilityResourceStat stat, final String modifierName, final StatValue value) {
 		resourceModifiers.get(resource).get(stat).addStatSource(modifierName, value);
 	}
 
@@ -49,7 +49,7 @@ public class CompositeStatBlock implements IStatBlock {
 	}
 
 	@Override
-	public Object statValue(final Stat stat) {
+	public Number statValue(final Stat stat) {
 		if (stat.getType() == StatType.INTEGER)
 			return compositeInteger(modifiers.get(stat).getStatValues());
 		else if (stat.getType() == StatType.DOUBLE)
@@ -64,7 +64,7 @@ public class CompositeStatBlock implements IStatBlock {
 	}
 
 	@Override
-	public Object resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
+	public Number resourceStatValue(final AbilityResource resource, final AbilityResourceStat stat) {
 		if (stat.getType() == StatType.INTEGER)
 			return compositeInteger(resourceModifiers.get(resource).get(stat).getStatValues());
 		else if (stat.getType() == StatType.DOUBLE)
@@ -73,25 +73,25 @@ public class CompositeStatBlock implements IStatBlock {
 			throw new RuntimeException("Unexpected stat type.");
 	}
 
-	private int compositeInteger(final Iterator<StatValue<?>> values) {
+	private int compositeInteger(final Iterator<StatValue> values) {
 		int accumulator = 0;
 
 		while (values.hasNext()) {
-			final StatValue<?> value = values.next();
+			final Number value = values.next().calculate();
 
-			accumulator += ((Integer)value.calculate());
+			accumulator += value.intValue();
 		}
 
 		return accumulator;
 	}
 
-	private double compositeDouble(final Iterator<StatValue<?>> values) {
+	private double compositeDouble(final Iterator<StatValue> values) {
 		double accumulator = 0;
 
 		while (values.hasNext()) {
-			final StatValue<?> value = values.next();
+			final Number value = values.next().calculate();
 
-			accumulator += ((Double)value.calculate());
+			accumulator += value.doubleValue();
 		}
 
 		return accumulator;

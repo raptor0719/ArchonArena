@@ -1,16 +1,16 @@
 package raptor.game.archonArena.unit.stats.values;
 
-public class LeveledStatValue<T> implements StatValue<T>, Leveled {
-	private final T[] values;
+public class LeveledStatValue implements StatValue, Leveled {
+	private final Number[] values;
 	private int level;
 
-	public LeveledStatValue(final T[] values) {
+	public LeveledStatValue(final Number[] values) {
 		this.values = values;
 		this.level = 0;
 	}
 
 	@Override
-	public T calculate() {
+	public Number calculate() {
 		return values[level];
 	}
 	@Override
