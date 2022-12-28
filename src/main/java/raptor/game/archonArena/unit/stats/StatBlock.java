@@ -1,5 +1,6 @@
 package raptor.game.archonArena.unit.stats;
 
+// FIXME: Remove once other stat system is complete
 public class StatBlock {
 	// Measured in units per second
 	private int moveSpeed;
