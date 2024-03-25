@@ -22,15 +22,13 @@ public class Main {
 	public static void main(final String[] args) throws AWTException, InterruptedException {
 		final GraphicsEnvironment graphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		final GraphicsDevice[] graphicsDevices = graphicsEnvironment.getScreenDevices();
-		final GraphicsDevice usedGraphicsDevice = graphicsDevices[1];
+		final GraphicsDevice usedGraphicsDevice = graphicsDevices[0];
 
 		final JFrame jframe = new JFrame(usedGraphicsDevice.getDefaultConfiguration());
 		jframe.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		jframe.setUndecorated(true);
 		jframe.setVisible(true);
 		jframe.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-		jframe.setLayout(new GridBagLayout());
 
 		final JPanel displayPanel = new JPanel();
 		displayPanel.setPreferredSize(new Dimension(jframe.getWidth(), jframe.getHeight()));
