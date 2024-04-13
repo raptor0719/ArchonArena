@@ -258,8 +258,10 @@ public class Unit extends AnimatedEntity {
 		final AttackOrder attackOrder = (AttackOrder)currentOrder;
 		final Unit target = attackOrder.getTarget();
 
-		if (!ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), target.getId()) || target.isDead())
+		if (!ArchonArena.getCurrentArchonArenaLevel().getVisionCalculator().hasVision(ArchonArena.getPlayer().getTeamId(), target.getId()) || target.isDead()) {
+			getAnimatedModel().stopBump();
 			finishOrder();
+		}
 
 		if (Point.distanceTo(getX(), getY(), target.getX(), target.getY()) > basicAttack.getRange()) {
 			setupMove(target.getX(), target.getY());
