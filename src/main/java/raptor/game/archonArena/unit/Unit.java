@@ -115,11 +115,15 @@ public class Unit extends AnimatedEntity {
 			isNewOrder = true;
 		}
 
+		if (currentOrder instanceof AttackOrder) {
+			handleAttackOrder(millisSinceLastFrame);
+			return;
+		}
+
+		getAnimatedModel().stopBump();
+
 		if (currentOrder instanceof MoveOrder)
 			handleMoveOrder(isNewOrder, millisSinceLastFrame);
-
-		if (currentOrder instanceof AttackOrder)
-			handleAttackOrder(millisSinceLastFrame);
 	}
 
 	@Override
