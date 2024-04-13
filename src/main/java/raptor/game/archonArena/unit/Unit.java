@@ -23,7 +23,7 @@ import raptor.game.archonArena.unit.order.MoveOrder;
 import raptor.game.archonArena.unit.stats.StatBlock;
 
 public class Unit extends AnimatedEntity {
-	private static final int MAX_BUMP_TIME_IN_MS = 85;
+	private static final long MAX_BUMP_TIME_IN_MS = 85;
 	private static final IColor HEALTH_BAR_COLOR = new BasicColor(0, 255, 0, 255);
 
 	private final UnitDefinition definition;
@@ -42,16 +42,16 @@ public class Unit extends AnimatedEntity {
 
 	private int teamId;
 
-	private int basicAttackCooldown;
+	private long basicAttackCooldown;
 
 	// Bump Control
-	private int bumpTime;
-	private int currentBumpLength;
+	private long bumpTime;
+	private long currentBumpLength;
 
 	// Stuck detection
 	private static final int STUCK_MAX_MS = 600;
 	private Point stuckPosition;
-	private int stuckCounter;
+	private long stuckCounter;
 
 	public Unit(final UnitDefinition definition, final INavigator navigator, final IPoint startPosition, final int teamId) {
 		super(Game.getCurrentLevel().getEntityIdProvider().get(), definition.getName(), definition.getModelDefintion().getModelInstance(), definition.getSelectableWidth(), definition.getSelectableHeight());
@@ -288,8 +288,8 @@ public class Unit extends AnimatedEntity {
 		}
 	}
 
-	private int calculateMillisBetweenAttacks(final double attackSpeed) {
-		return (int)(1000/attackSpeed);
+	private long calculateMillisBetweenAttacks(final double attackSpeed) {
+		return (long)(1000/attackSpeed);
 	}
 
 	private void finishOrder() {
