@@ -88,7 +88,7 @@ public class Unit extends AnimatedEntity {
 
 	@Override
 	public void update(final long millisSinceLastFrame) {
-		basicAttackCooldown -= millisSinceLastFrame;
+		basicAttackCooldown = Math.max(basicAttackCooldown - millisSinceLastFrame, 0);
 
 		if (currentState == UnitState.MOVE) {
 			if (this.getPosition().equals(stuckPosition)) {
