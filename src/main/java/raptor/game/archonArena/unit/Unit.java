@@ -7,6 +7,7 @@ import raptor.engine.collision.geometry.CollisionCircle;
 import raptor.engine.display.render.BasicColor;
 import raptor.engine.display.render.IColor;
 import raptor.engine.display.render.IGraphics;
+import raptor.engine.display.render.RenderPlane;
 import raptor.engine.game.Game;
 import raptor.engine.nav.agent.DefaultNavAgent;
 import raptor.engine.nav.api.INavAgent;
@@ -165,6 +166,11 @@ public class Unit extends AnimatedEntity {
 				graphics.drawLine(x, y + height, x + width, y + height, SELECTION_BOX_LINE_THICKNESS, SELECTED_UNIT_BOX_COLOR);
 			}
 		}
+	}
+
+	@Override
+	public RenderPlane getRenderPlane() {
+		return RenderPlane.MIDDLEGROUND;
 	}
 
 	public void damage(final int amount) {
